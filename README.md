@@ -1,2 +1,2 @@
-# latte
-Latte is an in-situ framework aiming at providing a middleware able to connect HPC simulation codes with analysis and external services, whether it be on the same compute resources, allow remote resources to access data produced by the workflow.
+# Godrick
+Godrick is an in-situ middlware aiming at coupling HPC simulation codes with analysis and services, whether it be on the same compute environement or on remote resources connecting to the flow of data.
