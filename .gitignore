@@ -30,3 +30,18 @@
 *.exe
 *.out
 *.app
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+.coverage
+
+# VS 
+.vscode/
+
+# Python 
+*.egg-info/
+.pytest_cache
+
+# Build
+build/
