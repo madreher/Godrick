@@ -1,6 +1,8 @@
+from __future__ import annotations
 from pathlib import Path
 from collections import Counter
 from typing import List
+
 
 class ComputeResources():
     def __init__(self) -> None:
@@ -137,6 +139,21 @@ class ComputeCluster(ComputeResources):
             raise IndexError(f"Queried node index {index} but the cluster only has {len(self.nodes)} nodes registered.")
         
         return self.nodes[index]
+    
+    def selectNodesByRange(self, ranges:List[int]) -> List[ComputeCluster]:
+        totalNbNodes = sum(ranges)
+        if totalNbNodes > len(self.nodes):
+            raise ValueError(f"Requested {totalNbNodes} from the cluster {self.name}, but only {len(self.nodes)} are available.")
+        
+        result = []
+        currentIndex = 0
+        for interval in ranges:
+            print(interval)
+            cluster = ComputeCluster(name=f"{self.name}-{currentIndex}-{currentIndex+interval}")
+            cluster.nodes = self.nodes[currentIndex:currentIndex+interval]
+            result.append(cluster)
+            currentIndex += interval 
+        return result
     
     def toDict(self) -> dict:
         result = {}

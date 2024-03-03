@@ -15,7 +15,7 @@ class OpenMPILauncher():
         rankfileContent = ""
         hostfileContent = ""
         rankOffset = 0
-        for task in tasks:
+        for i, task in enumerate(tasks):
             resource = task.getResources()
             if resource is None:
                 raise ValueError(f"The task {task.getName()} does have resources assigned to it.")
@@ -26,7 +26,10 @@ class OpenMPILauncher():
             (hostfile, rankfile, cmd, newOffset) = self.appendMPITask(task, rankOffset)
             hostfileContent += hostfile
             rankfileContent += rankfile
-            mpirunCommand += cmd
+            if i == 0:
+                mpirunCommand += cmd
+            else:
+                mpirunCommand += f" :{cmd}"
             rankOffset = newOffset
 
         print("Hostfile content:")
@@ -63,7 +66,7 @@ class OpenMPILauncher():
             hostfile += f"{core['hostname']}\n"
             rankfile += f"rank {rankOffset+i}={core['hostname']} slots={core['mainthread']}\n"
         
-        commandline += f"-np {nbCores} {task.getCommandLine()}"
+        commandline += f" -np {nbCores} {task.getCommandLine()}"
 
         return hostfile, rankfile, commandline, rankOffset + nbCores
 
