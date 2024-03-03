@@ -1,4 +1,4 @@
-from godrick.computeResources import ComputeResources
+from godrick.computeResources import ComputeCollection
 from enum import Enum
 
 class TaskType(Enum):
@@ -6,7 +6,7 @@ class TaskType(Enum):
     MPI = 0
 
 class Task():
-    def __init__(self, type:TaskType, name:str, cmdline:str, resources:ComputeResources = None) -> None:
+    def __init__(self, type:TaskType, name:str, cmdline:str, resources:ComputeCollection = None) -> None:
         super().__init__()
         self.name = name
         self.type = type
@@ -15,10 +15,10 @@ class Task():
         self.inputPort = []
         self.outputPort = []
 
-    def setResources(self, resources:ComputeResources) -> None:
+    def setResources(self, resources:ComputeCollection) -> None:
         self.resources = resources  
 
-    def getResources(self) -> ComputeResources:
+    def getResources(self) -> ComputeCollection:
         return self.resources
     
     def getName(self) -> str:
@@ -31,7 +31,7 @@ class Task():
         return self.cmdline
 
 class SingletonTask(Task):
-    def __init__(self, name:str, cmdline:str, resources:ComputeResources = None) -> None:
+    def __init__(self, name:str, cmdline:str, resources:ComputeCollection = None) -> None:
         super().__init__(TaskType.SINGLETON, name, cmdline, resources)  
 
 class MPIPlacementPolicy(Enum):
@@ -41,7 +41,7 @@ class MPIPlacementPolicy(Enum):
     USERDEFINED = 3
 
 class MPITask(Task):
-    def __init__(self, name:str, cmdline:str, resources:ComputeResources = None, placementPolicy:MPIPlacementPolicy = MPIPlacementPolicy.ONETASKPERCORE) -> None:
+    def __init__(self, name:str, cmdline:str, resources:ComputeCollection = None, placementPolicy:MPIPlacementPolicy = MPIPlacementPolicy.ONETASKPERCORE) -> None:
         super().__init__(TaskType.MPI, name, cmdline, resources)
         self.placementPolicy = placementPolicy
 

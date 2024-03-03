@@ -69,10 +69,25 @@ class ComputeSocket(ComputeResources):
                 core["hyperthread"] = self.hyperThreads[i]
             result.append(core)
         return result
+    
+    def selectCoresByIndexRange(self, startIndex:int, endIndex:int) -> List[ComputeSocket]:
+
+        socket = ComputeSocket()
+        socket.hasHT = self.hasHT
+        socket.hostname = self.getHostName()
+        for i, core in enumerate(self.mainThreads):
+            if core >= startIndex and core <= endIndex:
+                socket.mainThreads.append(self.mainThreads[i]) # == core
+            if self.hasHT:
+                socket.hyperThreads.append(self.hyperThreads[i])
+        return socket
+
+    def getNbCores(self) -> int:
+        return len(self.mainThreads)
 
 class ComputeNode(ComputeResources):
-    def __init__(self) -> None:
-        self.hostname = ""
+    def __init__(self, hostname:str="") -> None:
+        self.hostname = hostname
         self.sockets = []
 
     def initAutomatic(self, hostname:str, nbSockets:int=1, coresPerSocket:int=1, useHT:bool=True):
@@ -114,15 +129,29 @@ class ComputeNode(ComputeResources):
         for socket in self.sockets:
             result.extend(socket.getListOfCores())
         return result
+    
+    def getNbCores(self) -> int:
+        result = 0
+        for socket in self.sockets:
+            result += socket.getNbCores()
+        return result
+    
+    def selectCoresByIndexRange(self, startIndex:int, endIndex:int) -> ComputeNode:
+        subNode = ComputeNode(self.hostname)
+        for socket in self.sockets:
+            subSocket = socket.selectCoresByIndexRange(startIndex=startIndex, endIndex=endIndex)
+            if subSocket.getNbCores() > 0:
+                subNode.sockets.append(subSocket)
+        return subNode
             
-class ComputeCluster(ComputeResources):
+class ComputeCollection(ComputeResources):
     def __init__(self, name:str="defaultCluster") -> None:
         self.nodes = []
         self.name = name
 
     def initFromHostFile(self, file:Path, addHT:bool=True) -> None:
         if len(self.nodes) > 0:
-            raise RuntimeError(f"Cannot initialize the ComputeCluster {self.name} from a hostfile, the cluster already has nodes attached to it.")
+            raise RuntimeError(f"Cannot initialize the ComputeCollection {self.name} from a hostfile, the collection already has nodes attached to it.")
         with open(file, "r") as f:
             lines = list(filter(None, f.read().splitlines())) # splitlines to remove the \n, filter to remove the empty lines
             machines = Counter(lines)
@@ -140,7 +169,7 @@ class ComputeCluster(ComputeResources):
         
         return self.nodes[index]
     
-    def selectNodesByRange(self, ranges:List[int]) -> List[ComputeCluster]:
+    def selectNodesByRange(self, ranges:List[int]) -> List[ComputeCollection]:
         totalNbNodes = sum(ranges)
         if totalNbNodes > len(self.nodes):
             raise ValueError(f"Requested {totalNbNodes} from the cluster {self.name}, but only {len(self.nodes)} are available.")
@@ -148,13 +177,41 @@ class ComputeCluster(ComputeResources):
         result = []
         currentIndex = 0
         for interval in ranges:
-            print(interval)
-            cluster = ComputeCluster(name=f"{self.name}-{currentIndex}-{currentIndex+interval}")
+            cluster = ComputeCollection(name=f"{self.name}-{currentIndex}-{currentIndex+interval}")
             cluster.nodes = self.nodes[currentIndex:currentIndex+interval]
             result.append(cluster)
             currentIndex += interval 
         return result
     
+    def splitNodesByCoreRange(self, ranges:List[int]) -> List[ComputeCollection]:
+        if len(ranges) == 0:
+            raise ValueError("List of core ranges is empty.")
+
+        if len(self.nodes) == 0:
+            raise ValueError("Requesting nodes split, but the collection does not currently contain nodes.")
+        
+        # Create the list of indexes
+        startIndex = 0
+        intervals = []
+        for size in ranges:
+            if size < 1:
+                raise ValueError("Core range has to be equal or greater than 1.")
+            intervals.append([startIndex, startIndex+size-1]) # -1 because we are considering indexes
+            startIndex += size
+
+        result = []
+        for interval in intervals:
+            cluster = ComputeCollection(name=f"{self.name}-c{interval[0]}-c{interval[1]}")
+            nodes = []
+            for node in self.nodes:
+                subNode = node.selectCoresByIndexRange(interval[0], interval[1])
+                if subNode.getNbCores() == 0:
+                    raise RuntimeError(f"Request cores from {interval[0]} to {interval[1]} on node {subNode.getName()}, but no cores found for these indexes.")
+                nodes.append(subNode)
+            cluster.nodes = nodes
+            result.append(cluster)
+        return result
+
     def toDict(self) -> dict:
         result = {}
         result["name"] = self.name

@@ -2,12 +2,12 @@ import os
 from pathlib import Path
 import pytest
 
-from godrick.computeResources import ComputeCluster
+from godrick.computeResources import ComputeCollection
 
 def test_singleHost():
 
     exampleFile = os.path.join(Path(__file__).resolve().parent, "../../data/tests/singlehost.txt")
-    cluster = ComputeCluster(name="myCluster")
+    cluster = ComputeCollection(name="myCluster")
     cluster.initFromHostFile(exampleFile, True)
 
     assert cluster.getNbNodes() == 1
@@ -25,7 +25,7 @@ def test_singleHost():
 
 def test_clusterNodeOutOfBound():
     exampleFile = os.path.join(Path(__file__).resolve().parent, "../../data/tests/singlehost.txt")
-    cluster = ComputeCluster(name="myCluster")
+    cluster = ComputeCollection(name="myCluster")
     cluster.initFromHostFile(exampleFile, True)
 
     with pytest.raises(Exception) as e_info:
@@ -33,7 +33,7 @@ def test_clusterNodeOutOfBound():
 
 def test_clusterSocketOutOfBound():
     exampleFile = os.path.join(Path(__file__).resolve().parent, "../../data/tests/singlehost.txt")
-    cluster = ComputeCluster(name="myCluster")
+    cluster = ComputeCollection(name="myCluster")
     cluster.initFromHostFile(exampleFile, True)
     node = cluster.getNodeByIndex(0)
     
