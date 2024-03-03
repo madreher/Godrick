@@ -130,6 +130,13 @@ class ComputeNode(ComputeResources):
             result.extend(socket.getListOfCores())
         return result
     
+    def getListOfCoresPerSocket(self) -> List[dict]:
+        result = []
+        for socket in self.sockets:
+            result.append(socket.getListOfCores())
+        return result
+
+    
     def getNbCores(self) -> int:
         result = 0
         for socket in self.sockets:
@@ -225,6 +232,12 @@ class ComputeCollection(ComputeResources):
         result = []
         for node in self.nodes:
             result.extend(node.getListOfCores())
+        return result
+    
+    def getListOfCoresPerSocket(self) -> List[List[dict]]:
+        result = []
+        for node in self.nodes:
+            result.extend(node.getListOfCoresPerSocket())
         return result
 
 

@@ -46,6 +46,8 @@ class OpenMPILauncher():
         placementPolicy = task.getPlacementPolicy()
         if placementPolicy == MPIPlacementPolicy.ONETASKPERCORE:
             return self.appendMPITaskPerCore(task=task, rankOffset=rankOffset)
+        elif placementPolicy == MPIPlacementPolicy.ONETASKPERSOCKET:
+            return self.appendMPITaskPerSocket(task=task, rankOffset=rankOffset)
         else:
             raise NotImplementedError("Placement policy not implemented yet.")
 
@@ -69,6 +71,34 @@ class OpenMPILauncher():
         commandline += f" -np {nbCores} {task.getCommandLine()}"
 
         return hostfile, rankfile, commandline, rankOffset + nbCores
+    
+    def appendMPITaskPerSocket(self, task:Task, rankOffset:int) -> Tuple[str, str, str, int]:
+        # Return expected: output hostfile, output rankfile, output cmdline, new rankoffset
+        resources = task.getResources()
+        corePerSocketList = resources.getListOfCoresPerSocket()
+
+        hostfile = ""
+        rankfile = ""
+        commandline = ""
+        nbRanks = len(corePerSocketList)
+
+        #if nbCores == 0:
+        #    raise ValueError(f"No cores found in the resources assigned to the task {task.getName()}.")
+        
+        for i, socket in enumerate(corePerSocketList):
+            print(f"Socket {i}: {socket}")
+            slots = ""
+            if len(socket) == 0:
+                raise ValueError(f"No cores found in a socket assigned to the task {task.getName()}.")
+            for core in socket:
+                hostfile += f"{core['hostname']}\n"
+                slots += f"{core['mainthread']},"
+            slots = slots.rstrip(",")
+            rankfile += f"rank {rankOffset+i}={core['hostname']} slots={slots}\n"
+        
+        commandline += f" -np {nbRanks} {task.getCommandLine()}"
+
+        return hostfile, rankfile, commandline, rankOffset + nbRanks
 
 
 
