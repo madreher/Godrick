@@ -37,7 +37,7 @@ class SingletonTask(Task):
 class MPIPlacementPolicy(Enum):
     ONETASKPERCORE = 0,
     ONETASKPERSOCKET = 1,
-    ONETESTPERNODE = 2,
+    ONETASKPERNODE = 2,
     USERDEFINED = 3
 
 class MPITask(Task):
