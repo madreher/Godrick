@@ -433,3 +433,10 @@ mpirun --hostfile hostfile.MyWorkflow6.txt --rankfile rankfile.MyWorkflow6.txt  
     rankfilePath.unlink()
     hostfilePath.unlink()
     commandfilePath.unlink()
+
+    # Generate the configuration file
+    workflow.generateWorkflowConfiguration()
+
+    # Check that the file exist
+    configfilePath = Path("config.MyWorkflow6.json")
+    assert configfilePath.is_file()

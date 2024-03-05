@@ -28,6 +28,9 @@ class OpenMPILauncher():
             if task.getTaskType() != TaskType.MPI:
                 raise RuntimeError(f"Trying to launch a non-mpi task with the mpi launcher.")
             
+            # Variables to tracks the MPI ranks of the task
+            startRank = rankOffset
+
             (hostfile, rankfile, cmd, newOffset) = self.appendMPITask(task, rankOffset)
             hostfileContent += hostfile
             rankfileContent += rankfile
@@ -36,6 +39,11 @@ class OpenMPILauncher():
             else:
                 mpirunCommand += f" :{cmd}"
             rankOffset = newOffset
+            sizeRank = newOffset - startRank
+            
+            # Flag the task as been processed
+            task.setGlobalRanks(startRank, sizeRank)
+            task.markAsProcessed()
 
         if folder is not None:
             # Create the folder if it doesn't exist
@@ -79,12 +87,12 @@ class OpenMPILauncher():
                 f.write(mpirunCommand)
                 f.close()
 
-        print("Hostfile content:")
-        print(hostfileContent)
-        print("Rankfile content:")
-        print(rankfileContent)
-        print("Command line:")
-        print(mpirunCommand)
+        #print("Hostfile content:")
+        #print(hostfileContent)
+        #print("Rankfile content:")
+        #print(rankfileContent)
+        #print("Command line:")
+        #print(mpirunCommand)
 
             
 
