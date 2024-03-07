@@ -27,6 +27,9 @@ target_link_libraries( ${library_MODULE}
                   )
 target_compile_features(   ${library_MODULE} PUBLIC cxx_std_20)
 
+include(GNUInstallDirs)
+install(TARGETS ${library_MODULE} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
 if(${GR_MPI_TRANSPORT})
     add_subdirectory(mpi)
 endif()

@@ -93,6 +93,7 @@ class OpenMPILauncher():
         #print(rankfileContent)
         #print("Command line:")
         #print(mpirunCommand)
+        workflow.generateWorkflowConfiguration()
 
             
 

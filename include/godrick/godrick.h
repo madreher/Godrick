@@ -10,7 +10,9 @@ class Godrick
 public:
     Godrick(){}
     virtual ~Godrick(){}
-    virtual bool initFromJSON(const std::string& jsonPath);
+    virtual bool initFromJSON(const std::string& jsonPath, const std::string& taskName);
+
+    virtual void close(){}
 
 protected:
 

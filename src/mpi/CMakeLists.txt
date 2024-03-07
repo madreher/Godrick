@@ -20,6 +20,7 @@ target_link_libraries( ${library_MODULE}
                                 GR_project_options
                                 GR_project_warnings
                                 MPI::MPI_CXX
+                                GodrickLib
                      )
 
 target_link_libraries( ${library_MODULE}
@@ -28,3 +29,6 @@ target_link_libraries( ${library_MODULE}
                             GR_project_options
                   )
 target_compile_features(   ${library_MODULE} PUBLIC cxx_std_20)
+
+include(GNUInstallDirs)
+install(TARGETS ${library_MODULE} DESTINATION ${CMAKE_INSTALL_LIBDIR})

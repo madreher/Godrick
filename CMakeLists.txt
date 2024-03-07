@@ -98,5 +98,12 @@ endif()
 
 set(GR_BIN_DIR 			${CMAKE_INSTALL_PREFIX}/bin)
 set(GR_LIB_DIR 			${CMAKE_INSTALL_PREFIX}/lib)
+set(GR_EXAMPLES_DIR     ${CMAKE_INSTALL_PREFIX}/examples)
 
 add_subdirectory(src)
+add_subdirectory(examples)
+
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+include(GNUInstallDirs)
+install(DIRECTORY include/godrick DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
