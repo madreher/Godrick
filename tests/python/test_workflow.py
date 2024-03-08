@@ -20,7 +20,7 @@ def test_singleTaskSingleHostWorkflow():
     task.setResources(cluster)
 
     # Add the task to the workflow
-    workflow.addTask(task=task)
+    workflow.declareTask(task=task)
 
     # Create a launcher
     launcher = MainLauncher()
@@ -74,7 +74,7 @@ def test_singleTaskMultipleHostWorkflow():
     task.setResources(cluster)
 
     # Add the task to the workflow
-    workflow.addTask(task=task)
+    workflow.declareTask(task=task)
 
     # Create a launcher
     launcher = MainLauncher()
@@ -152,8 +152,8 @@ def test_multipleTaskMultipleHostWorkflow():
 
 
     # Add the task to the workflow
-    workflow.addTask(task=task1)
-    workflow.addTask(task=task2)
+    workflow.declareTask(task=task1)
+    workflow.declareTask(task=task2)
 
     # Create a launcher
     launcher = MainLauncher()
@@ -231,8 +231,8 @@ def test_multipleTaskMultipleHostSplitCoresWorkflow():
 
 
     # Add the task to the workflow
-    workflow.addTask(task=task1)
-    workflow.addTask(task=task2)
+    workflow.declareTask(task=task1)
+    workflow.declareTask(task=task2)
 
     # Create a launcher
     launcher = MainLauncher()
@@ -310,8 +310,8 @@ def test_multipleTaskMultipleHostPerSocketWorkflow():
 
 
     # Add the task to the workflow
-    workflow.addTask(task=task1)
-    workflow.addTask(task=task2)
+    workflow.declareTask(task=task1)
+    workflow.declareTask(task=task2)
 
     # Create a launcher
     launcher = MainLauncher()
@@ -383,8 +383,8 @@ def test_multipleTaskMultipleHostPerNodeWorkflow():
 
 
     # Add the task to the workflow
-    workflow.addTask(task=task1)
-    workflow.addTask(task=task2)
+    workflow.declareTask(task=task1)
+    workflow.declareTask(task=task2)
 
     # Create a launcher
     launcher = MainLauncher()

@@ -14,5 +14,6 @@ install(TARGETS
 
 install(FILES 
                     simplempi_workflow.py 
+                    simplempi_ports_workflow.py
             DESTINATION 
                     ${GR_EXAMPLES_DIR}/simplempi)

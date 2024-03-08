@@ -1,4 +1,5 @@
 from godrick.computeResources import ComputeCollection
+from godrick.port import InputPort, OutputPort
 from enum import Enum
 
 class TaskType(Enum):
@@ -12,8 +13,8 @@ class Task():
         self.type = type
         self.cmdline = cmdline
         self.resources = resources
-        self.inputPort = []
-        self.outputPort = []
+        self.inputPort = {}
+        self.outputPort = {}
 
         self.processedByLauncher = False    # Flag used when creating the command line
                                             # This will be switched when a launcher convert the Task to command line
@@ -37,8 +38,8 @@ class Task():
         result = {}
         result["name"] = self.name
         result["type"] = self.type.name
-        result["inputPorts"] = []
-        result["outputPorts"] = []
+        result["inputPorts"] = list(self.inputPort.keys())
+        result["outputPorts"] = list(self.outputPort.keys())
         return result
     
     def hasBeenProcessed(self) -> bool:
@@ -49,6 +50,26 @@ class Task():
             raise RuntimeError(f"Trying to mark the task {self.name} as processed but it was already processed. Called multiple time a launcher?")
         self.processedByLauncher = True
 
+    def addInputPort(self, portName:str) -> None:
+        if portName in self.inputPort.keys():
+            raise ValueError(f"The input port {portName} is already declared for the task {self.name}.")
+        self.inputPort[portName] = InputPort(name=portName, task=self)
+
+    def addOutputPort(self, portName:str) -> None:
+        if portName in self.outputPort.keys():
+            raise ValueError(f"The output port {portName} is already declared for the task {self.name}.")
+        self.outputPort[portName] = OutputPort(name=portName, task=self)
+
+    def getInputPort(self, portName:str) -> InputPort:
+        if portName not in self.inputPort.keys():
+            raise ValueError(f"The input port {portName} is not declared in the task {self.name}.")
+        return self.inputPort[portName]
+    
+    def getOutputPort(self, portName:str) -> InputPort:
+        if portName not in self.outputPort.keys():
+            raise ValueError(f"The output port {portName} is not declared in the task {self.name}.")
+        return self.outputPort[portName]
+    
 class SingletonTask(Task):
     def __init__(self, name:str, cmdline:str, resources:ComputeCollection = None) -> None:
         super().__init__(TaskType.SINGLETON, name, cmdline, resources)  
@@ -75,6 +96,12 @@ class MPITask(Task):
     def setGlobalRanks(self, start:int, size:int) -> None:
         self.startRank = start
         self.nbRanks = size
+
+    def getGlobalStartRank(self) -> int:
+        return self.startRank
+    
+    def getGlobalNbRank(self) -> int:
+        return self.nbRanks
     
     def toDict(self) -> dict:
         result =  super().toDict()

@@ -1,5 +1,6 @@
 from godrick.workflow import Workflow
 from godrick.task import TaskType, Task, MPIPlacementPolicy
+from godrick.communicator import CommunicatorType
 from typing import Tuple
 from pathlib import Path
 
@@ -20,7 +21,11 @@ class OpenMPILauncher():
         rankfileContent = ""
         hostfileContent = ""
         rankOffset = 0
+
+        # Process the tasks
         for i, task in enumerate(tasks):
+            if task.getTaskType() != TaskType.MPI:
+                raise NotImplementedError("Only MPI tasks are supported for now.")
             resource = task.getResources()
             if resource is None:
                 raise ValueError(f"The task {task.getName()} does have resources assigned to it.")
@@ -44,6 +49,20 @@ class OpenMPILauncher():
             # Flag the task as been processed
             task.setGlobalRanks(startRank, sizeRank)
             task.markAsProcessed()
+
+        # Process the communicators
+        for i, comm in enumerate(workflow.getCommunicators()):
+            if comm.getCommunicatorType() != CommunicatorType.MPI:
+                raise NotImplementedError("Only MPI communicators are supported for now.")
+            
+            inputTask = workflow.getTaskByName(comm.getInputTaskName())
+            comm.setInputMPIRanks(inputTask.getGlobalStartRank(), inputTask.getGlobalNbRank())
+
+            outputTask = workflow.getTaskByName(comm.getOutputTaskName())
+            comm.setOutputMPIRanks(outputTask.getGlobalStartRank(), outputTask.getGlobalNbRank())
+
+            # Done setting up the comm, marking it as processed
+            comm.markAsProcessed()
 
         if folder is not None:
             # Create the folder if it doesn't exist
@@ -87,12 +106,9 @@ class OpenMPILauncher():
                 f.write(mpirunCommand)
                 f.close()
 
-        #print("Hostfile content:")
-        #print(hostfileContent)
-        #print("Rankfile content:")
-        #print(rankfileContent)
-        #print("Command line:")
-        #print(mpirunCommand)
+        # Now that all the tasks have been processed, all the information required has been
+        # associated with the relevant component. We can now generate the configuration for the
+        # workflow
         workflow.generateWorkflowConfiguration()
 
             

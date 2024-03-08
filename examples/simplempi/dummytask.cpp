@@ -43,6 +43,11 @@ int main(int argc, char** argv)
     int taskCommSize;
     MPI_Comm_size(taskComm, &taskCommSize);
     spdlog::info("Task {} initialized with the task rank: {}, task comm size: {}.", taskName, taskRank, taskCommSize);
+
+    auto listInputPort = handler.getInputPortList();
+    auto listOutputPort = handler.getOutputPortList();
+
+    spdlog::info("Task {} has {} input ports and {} output ports.", taskName, listInputPort.size(), listOutputPort.size());
     
     handler.close();
 }
