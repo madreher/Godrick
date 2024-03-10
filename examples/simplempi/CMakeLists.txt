@@ -8,12 +8,11 @@ target_link_libraries(task
                                 GodrickMPILib)
 
 install(TARGETS 
-                    task 
-                DESTINATION
-                    ${GR_EXAMPLES_DIR}/simplempi/bin)
+            task 
+        DESTINATION
+            ${GR_EXAMPLES_DIR}/simplempi/bin)
 
 install(FILES 
-                    simplempi_workflow.py 
-                    simplempi_ports_workflow.py
-            DESTINATION 
-                    ${GR_EXAMPLES_DIR}/simplempi)
+            simplempi_workflow.py 
+        DESTINATION 
+            ${GR_EXAMPLES_DIR}/simplempi)

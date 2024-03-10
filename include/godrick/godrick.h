@@ -6,6 +6,8 @@
 
 #include <godrick/port.h>
 
+#include <conduit/conduit.hpp>
+
 namespace godrick {
 
 class Godrick
@@ -20,6 +22,9 @@ public:
 
     std::vector<std::string> getInputPortList() const;
     std::vector<std::string> getOutputPortList() const;
+
+    bool push(const std::string& portName, conduit::Node& data) const;
+    bool get(const std::string& portName, std::vector<conduit::Node>& data) const;
 
 protected:
     std::unordered_map<std::string, InputPort>  m_inputPorts;

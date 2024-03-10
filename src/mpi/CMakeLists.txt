@@ -2,8 +2,6 @@
 set(library_MODULE GodrickMPILib   )
 #=======================================
 
-find_package(MPI REQUIRED)
-
 file(GLOB_RECURSE files "*.cpp")
 
 add_library( ${library_MODULE} SHARED ${files} )
@@ -19,8 +17,9 @@ target_link_libraries( ${library_MODULE}
                                 GR_project_libraries
                                 GR_project_options
                                 GR_project_warnings
-                                MPI::MPI_CXX
                                 GodrickLib
+                                conduit::conduit_mpi
+                                MPI::MPI_CXX
                      )
 
 target_link_libraries( ${library_MODULE}

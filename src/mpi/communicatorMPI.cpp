@@ -2,6 +2,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <conduit/conduit_relay_mpi.hpp>
+
 bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
 {
     if(data.count("type") == 0 || data.at("type").get<std::string>().compare("MPI") != 0)
@@ -20,6 +22,13 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
     if(m_globalInStartRank < m_globalOutStartRank+m_globalOutSize && m_globalOutStartRank < m_globalInStartRank+m_globalInSize )
     {
         spdlog::error("Overlapping input and output ports are currently not supported by the CommunicatorMPI.");
+        return false;
+    }
+
+    // Validity checks for the communication method to use
+    if(m_protocol == CommProtocol::BROADCAST && m_globalOutSize != 1)
+    {
+        spdlog::error("The BROADCAST protocol can only be used with a single producer rank but the producer has {} ranks.", m_globalOutSize);
         return false;
     }
 
@@ -66,4 +75,44 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
         m_isSource = true;
 
     return true;
+}
+
+bool godrick::mpi::CommunicatorMPI::send(conduit::Node& data) const
+{
+    switch(m_protocol)
+    {
+        case CommProtocol::BROADCAST:
+        {
+            conduit::relay::mpi::broadcast_using_schema(data, m_localOutStartRank, m_localComm);
+            return true;
+            break;
+        }
+        default:
+        {
+            spdlog::error("Communication protocol {} not supported by the MPI transport method.", m_protocol);
+        }
+    }
+    
+    return false;
+}
+
+bool godrick::mpi::CommunicatorMPI::receive(std::vector<conduit::Node>& data) const
+{
+    switch(m_protocol)
+    {
+        case CommProtocol::BROADCAST:
+        {
+            data.resize(1);
+            conduit::relay::mpi::broadcast_using_schema(data[0], m_localOutStartRank, m_localComm);
+
+            return true;
+            break;
+        }
+        default:
+        {
+            spdlog::error("Communication protocol {} not supported by the MPI transport method.", m_protocol);
+        }
+    }
+
+    return false;
 }

@@ -13,14 +13,14 @@ def main():
     cluster = ComputeCollection(name="myCluster")
     cluster.initFromHostFile(exampleFile, True)
 
-    workflow = Workflow("SimpleMPIPortsWorkflow")
+    workflow = Workflow("MPIBroadcastWorkflow")
 
     partitions = cluster.splitNodesByCoreRange([1, 3])
 
-    task1 = MPITask(name="task1", cmdline="bin/task --name task1 --config config.SimpleMPIPortsWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+    task1 = MPITask(name="send", cmdline="bin/send --name send --config config.MPIBroadcastWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
     task1.addOutputPort("out")
     task1.setResources(partitions[0])
-    task2 = MPITask(name="task2", cmdline="bin/task --name task2 --config config.SimpleMPIPortsWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+    task2 = MPITask(name="receive", cmdline="bin/receive --name receive --config config.MPIBroadcastWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
     task2.addInputPort("in")
     task2.setResources(partitions[1])
 

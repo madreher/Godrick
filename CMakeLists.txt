@@ -59,15 +59,15 @@ target_compile_definitions(GR_project_options
                             INTERFACE
                                 CMAKE_BINARY_DIR="${CMAKE_BINARY_DIR}"
                                 CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
-                                MQ_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-                                MQ_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
-                                MQ_VERSION_STRING="${MQ_VERSION_STRING}"
-                                MQ_VERSION_MAJOR=${MQ_VERSION_MAJOR}
-                                MQ_VERSION_MINOR=${MQ_VERSION_MINOR}
-                                MQ_VERSION_PATCH=${MQ_VERSION_PATCH}
-                                MQ_VERSION_TWEAK=${MQ_VERSION_BUILD}
+                                GR_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+                                GR_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
+                                GR_VERSION_STRING="${GR_VERSION_STRING}"
+                                GR_VERSION_MAJOR=${GR_VERSION_MAJOR}
+                                GR_VERSION_MINOR=${GR_VERSION_MINOR}
+                                GR_VERSION_PATCH=${GR_VERSION_PATCH}
+                                GR_VERSION_TWEAK=${GR_VERSION_BUILD}
                                 CMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}"
-                                MQ_GIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
+                                GR_GIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
 
 #######################################################################################
 # Link this interface to include a standard set of libs that would be needed
@@ -79,12 +79,18 @@ add_library(GR_project_libraries INTERFACE )
 target_include_directories( GR_project_libraries
     INTERFACE
         ${CMAKE_SOURCE_DIR}/include)
+if(${GR_MPI_TRANSPORT})
+    find_package(MPI REQUIRED)
+endif()
+
+find_package(Conduit REQUIRED)        
 if(WIN32)
 target_link_libraries( GR_project_libraries
     INTERFACE
         CONAN_PKG::spdlog
         CONAN_PKG::lyra
         CONAN_PKG::nlohmann_json
+        conduit::conduit
 )
 else()
 target_link_libraries( GR_project_libraries
@@ -93,6 +99,7 @@ target_link_libraries( GR_project_libraries
         CONAN_PKG::lyra
         CONAN_PKG::nlohmann_json
         stdc++fs
+        conduit::conduit
 )
 endif()
 

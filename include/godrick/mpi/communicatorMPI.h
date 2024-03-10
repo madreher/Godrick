@@ -18,6 +18,9 @@ public:
 
     virtual bool initFromJSON(json& data) override;
 
+    virtual bool send(conduit::Node& data) const override;
+    virtual bool receive(std::vector<conduit::Node>& data) const override;
+
 protected:
 
     // Information of the input port (consumer) and output port (producer) in the 

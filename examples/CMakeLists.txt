@@ -1,1 +1,2 @@
 add_subdirectory(simplempi)
+add_subdirectory(mpibroadcast)

@@ -44,8 +44,8 @@ fi
 
 # Build configuration
 BUILD_CONFIG=Release
-
 INSTALL_PATH=$PWD/install
+CONDUIT_PREFIX=/home/matthieu/dev/opt
 
 pushd ${DIR}
 git submodule update --init
@@ -62,6 +62,7 @@ cmake ${DIR} \
   -DCMAKE_PREFIX_PATH="${QT_DIR}" \
   -DGIT_COMMIT_HASH=${GIT_COMMIT_HASH} \
   -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} \
+  -DCMAKE_PREFIX_PATH=${CONDUIT_PREFIX}/lib/cmake \
   $@
 #  -DCMAKE_MODULE_PATH="${PWD}" \
 

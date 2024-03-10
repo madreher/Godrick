@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+#include <conduit/conduit.hpp>
+
 #include <godrick/communicator.h>
 
 
@@ -27,6 +29,7 @@ class InputPort : public Port
 public:
     InputPort(const std::string& name) : Port(name){}
     virtual ~InputPort() override {}
+    bool get(std::vector<conduit::Node>&  data) const;
 };
 
 class OutputPort : public Port 
@@ -34,6 +37,7 @@ class OutputPort : public Port
 public:
     OutputPort(const std::string& name) : Port(name){}
     virtual ~OutputPort() override {}
+    bool push(conduit::Node& data) const;
 };
 
 } // godrick
