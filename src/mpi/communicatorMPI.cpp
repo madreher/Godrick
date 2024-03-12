@@ -1,4 +1,5 @@
 #include <godrick/mpi/communicatorMPI.h>
+#include <godrick/mpi/broadcastMPI.h>
 
 #include <spdlog/spdlog.h>
 
@@ -24,14 +25,7 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
         spdlog::error("Overlapping input and output ports are currently not supported by the CommunicatorMPI.");
         return false;
     }
-
-    // Validity checks for the communication method to use
-    if(m_protocol == CommProtocol::BROADCAST && m_globalOutSize != 1)
-    {
-        spdlog::error("The BROADCAST protocol can only be used with a single producer rank but the producer has {} ranks.", m_globalOutSize);
-        return false;
-    }
-
+    
     MPI_Comm commWorld = MPI_COMM_WORLD;
 
     // Create the MPI communicators for this
@@ -74,45 +68,56 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
     if(m_localRank >= m_localOutStartRank && m_localRank < m_localOutStartRank+m_localOutSize)
         m_isSource = true;
 
+    // Loading the communication protocol now that MPI is setup
+    auto protocolName = data.at("mpiprotocol").get<std::string>();
+    if(!strToMPICommProtocol.contains(protocolName))
+    {
+        spdlog::error("Unknown protocol {} received for the MPICommunicator. Choose a supported protocol.", protocolName);
+        return false;
+    }
+    m_protocol = strToMPICommProtocol.at(protocolName);
+
+    // Protocol processing 
+    switch(m_protocol)
+    {
+        case MPICommProtocol::BROADCAST:
+        {
+            if(m_globalOutSize != 1)
+            {
+                spdlog::error("The BROADCAST protocol can only be used with a single producer rank but the producer has {} ranks.", m_globalOutSize);
+                return false;
+            }
+
+            m_protocolImpl = std::make_unique<BroadcastProtocolImplMPI>(m_localComm, m_localInStartRank, m_localInSize, m_localOutStartRank, m_localOutSize, m_localRank);
+            break;
+        }
+        default:
+        {
+            spdlog::error("Protocol method {} not currently supported or implemented.", protocolName);
+            return false;
+        }
+    }
+
+
     return true;
 }
 
 bool godrick::mpi::CommunicatorMPI::send(conduit::Node& data) const
 {
-    switch(m_protocol)
+    if(!m_protocolImpl)
     {
-        case CommProtocol::BROADCAST:
-        {
-            conduit::relay::mpi::broadcast_using_schema(data, m_localOutStartRank, m_localComm);
-            return true;
-            break;
-        }
-        default:
-        {
-            spdlog::error("Communication protocol {} not supported by the MPI transport method.", m_protocol);
-        }
+        spdlog::error("The protocol implementation is not instanciated.");
+        return false;
     }
-    
-    return false;
+    return m_protocolImpl->send(data);
 }
 
 bool godrick::mpi::CommunicatorMPI::receive(std::vector<conduit::Node>& data) const
 {
-    switch(m_protocol)
+    if(!m_protocolImpl)
     {
-        case CommProtocol::BROADCAST:
-        {
-            data.resize(1);
-            conduit::relay::mpi::broadcast_using_schema(data[0], m_localOutStartRank, m_localComm);
-
-            return true;
-            break;
-        }
-        default:
-        {
-            spdlog::error("Communication protocol {} not supported by the MPI transport method.", m_protocol);
-        }
+        spdlog::error("The protocol implementation is not instanciated.");
+        return false;
     }
-
-    return false;
+    return m_protocolImpl->receive(data);
 }

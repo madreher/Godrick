@@ -1,6 +1,7 @@
 #pragma once
 
 #include <godrick/communicator.h>
+#include <godrick/mpi/protocolImplMPI.h>
 
 #include <mpi.h>
 #include <nlohmann/json.hpp>
@@ -22,7 +23,6 @@ public:
     virtual bool receive(std::vector<conduit::Node>& data) const override;
 
 protected:
-
     // Information of the input port (consumer) and output port (producer) in the 
     // global communicator, aka world comm
     int m_globalInStartRank  = -1;
@@ -37,9 +37,12 @@ protected:
     int m_localOutStartRank = -1;
     int m_localOutSize = -1;
 
-    // Local information
+    // Local process information
     int m_localRank = -1;
-    bool m_isSource = false;
+    bool m_isSource = false;    // TODO: can only be used if overlapping is not allowed. 
+    std::unique_ptr<ProtocolImplMPI> m_protocolImpl;
+
+
 }; // CommunicatorMPI
 
 } // mpi

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include <conduit/conduit.hpp>
 
@@ -10,9 +11,15 @@ using json = nlohmann::json;
 
 namespace godrick {
 
-enum class CommProtocol : uint8_t
+enum class MPICommProtocol : uint8_t
 {
-    BROADCAST = 0
+    BROADCAST = 0,
+    PARTIAL_BCAST_GATHER = 1
+};
+
+static std::unordered_map<std::string, MPICommProtocol> strToMPICommProtocol = {
+    {"BROADCAST", MPICommProtocol::BROADCAST},
+    {"PARTIAL_BCAST_GATHER", MPICommProtocol::PARTIAL_BCAST_GATHER}
 };
 
 class Communicator
@@ -28,7 +35,7 @@ public:
 
 protected:
     std::string m_name;
-    CommProtocol m_protocol = CommProtocol::BROADCAST;
+    MPICommProtocol m_protocol = MPICommProtocol::BROADCAST;
 }; // Communicator
 
 } // godrick

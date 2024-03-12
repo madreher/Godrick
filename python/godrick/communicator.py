@@ -5,6 +5,10 @@ class CommunicatorType(Enum):
     MPI = 0,
     ZMQ = 1
 
+class MPICommunicatorProtocol(Enum):
+    BROADCAST = 0,
+    PARTIAL_BCAST_GATHER = 1
+
 class Communicator():
     def __init__(self, name:str, type:CommunicatorType) -> None:
         self.name = name
@@ -60,12 +64,13 @@ class Communicator():
         self.processedByLauncher = True
 
 class MPICommunicator(Communicator):
-    def __init__(self, id: str) -> None:
+    def __init__(self, id: str, protocol: MPICommunicatorProtocol = MPICommunicatorProtocol.BROADCAST) -> None:
         super().__init__(id, CommunicatorType.MPI)
         self.inStartRank = -1
         self.inSize = -1
         self.outStartRank = -1
         self.outSize = -1
+        self.protocol = protocol
 
     def toDict(self) -> dict:
         result =  super().toDict()
@@ -73,6 +78,7 @@ class MPICommunicator(Communicator):
         result["inSize"] = self.inSize
         result["outStartRank"] = self.outStartRank
         result["outSize"] = self.outSize
+        result["mpiprotocol"] = self.protocol.name
         return result
     
     def setInputMPIRanks(self, start:int, size:int) -> None:
@@ -82,5 +88,10 @@ class MPICommunicator(Communicator):
     def setOutputMPIRanks(self, start:int, size:int) -> None:
         self.outStartRank = start
         self.outSize = size
+
+    def setMPIProtocol(self, protocol:MPICommunicatorProtocol) -> None:
+        self.protocol = protocol
+
+    
 
     
