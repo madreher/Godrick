@@ -16,14 +16,18 @@ public:
                     int localInSize,
                     int localOutStartRank,
                     int localOutSize,
-                    int localRank) : 
+                    int localRank,
+                    bool isSource) : 
                     m_localComm(comm),
                     m_localInStartRank(localInStartRank),
                     m_localInSize(localInSize),
                     m_localOutStartRank(localOutStartRank),
                     m_localOutSize(localOutSize),
-                    m_localRank(localRank){}
+                    m_localRank(localRank),
+                    m_isSource(isSource){}
     virtual ~ProtocolImplMPI(){}
+
+    virtual bool isValid() const = 0;
 
     virtual bool send(conduit::Node& data) const = 0;
     virtual bool receive(std::vector<conduit::Node>& data) const = 0;

@@ -17,10 +17,12 @@ public:
                     int localInSize,
                     int localOutStartRank,
                     int localOutSize,
-                    int localRank) : ProtocolImplMPI(comm, localInStartRank, localInSize, localOutStartRank, localOutSize, localRank){}
+                    int localRank,
+                    bool isSource) : ProtocolImplMPI(comm, localInStartRank, localInSize, localOutStartRank, localOutSize, localRank, isSource){}
 
     virtual ~BroadcastProtocolImplMPI(){}
 
+    virtual bool isValid() const override;
     virtual bool send(conduit::Node& data) const override;
     virtual bool receive(std::vector<conduit::Node>& data) const override;
 };

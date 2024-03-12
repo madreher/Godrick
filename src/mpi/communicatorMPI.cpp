@@ -82,13 +82,7 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
     {
         case MPICommProtocol::BROADCAST:
         {
-            if(m_globalOutSize != 1)
-            {
-                spdlog::error("The BROADCAST protocol can only be used with a single producer rank but the producer has {} ranks.", m_globalOutSize);
-                return false;
-            }
-
-            m_protocolImpl = std::make_unique<BroadcastProtocolImplMPI>(m_localComm, m_localInStartRank, m_localInSize, m_localOutStartRank, m_localOutSize, m_localRank);
+            m_protocolImpl = std::make_unique<BroadcastProtocolImplMPI>(m_localComm, m_localInStartRank, m_localInSize, m_localOutStartRank, m_localOutSize, m_localRank, m_isSource);
             break;
         }
         default:
@@ -98,6 +92,11 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
         }
     }
 
+    if(!m_protocolImpl->isValid())
+    {
+        spdlog::error("The communication protocol used by the communicator {} is not valid.", m_name);
+        return false;
+    }
 
     return true;
 }
