@@ -29,8 +29,10 @@ public:
 
     virtual bool isValid() const = 0;
 
-    virtual bool send(conduit::Node& data) const = 0;
-    virtual bool receive(std::vector<conduit::Node>& data) const = 0;
+    virtual bool send(conduit::Node& data) = 0;
+    virtual bool receive(std::vector<conduit::Node>& data) = 0;
+    virtual void flush(){}
+    virtual void print(){}
 protected:
     MPI_Comm m_localComm = MPI_COMM_NULL;
     int m_localInStartRank = -1;

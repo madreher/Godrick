@@ -1,2 +1,3 @@
 add_subdirectory(simplempi)
 add_subdirectory(mpibroadcast)
+add_subdirectory(mpipartialbcastgather)

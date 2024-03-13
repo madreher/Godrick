@@ -30,8 +30,9 @@ public:
 
     virtual bool initFromJSON(json& data);
 
-    virtual bool send(conduit::Node& data) const = 0;
-    virtual bool receive(std::vector<conduit::Node>& data) const = 0;
+    virtual bool send(conduit::Node& data) = 0;
+    virtual bool receive(std::vector<conduit::Node>& data) = 0;
+    virtual void flush(){}
 
 protected:
     std::string m_name;

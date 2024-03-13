@@ -23,8 +23,9 @@ public:
     virtual ~BroadcastProtocolImplMPI(){}
 
     virtual bool isValid() const override;
-    virtual bool send(conduit::Node& data) const override;
-    virtual bool receive(std::vector<conduit::Node>& data) const override;
+    virtual bool send(conduit::Node& data) override;
+    virtual bool receive(std::vector<conduit::Node>& data) override;
+    virtual void print() override;
 };
 
 } // mpi

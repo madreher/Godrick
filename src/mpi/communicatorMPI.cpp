@@ -1,5 +1,6 @@
 #include <godrick/mpi/communicatorMPI.h>
 #include <godrick/mpi/broadcastMPI.h>
+#include <godrick/mpi/partialBcastGatherMPI.h>
 
 #include <spdlog/spdlog.h>
 
@@ -18,6 +19,9 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
     m_globalInSize          = data.at("inSize").get<int>();
     m_globalOutStartRank    = data.at("outStartRank").get<int>();       // Rank of the OUTPUT PORT = source
     m_globalOutSize         = data.at("outSize").get<int>();
+
+    m_localInSize = m_globalInSize;
+    m_localOutSize = m_globalOutSize;
 
     // For now, we only support disjoints in and out ranks
     if(m_globalInStartRank < m_globalOutStartRank+m_globalOutSize && m_globalOutStartRank < m_globalInStartRank+m_globalInSize )
@@ -83,6 +87,12 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
         case MPICommProtocol::BROADCAST:
         {
             m_protocolImpl = std::make_unique<BroadcastProtocolImplMPI>(m_localComm, m_localInStartRank, m_localInSize, m_localOutStartRank, m_localOutSize, m_localRank, m_isSource);
+            //m_protocolImpl->print();
+            break;
+        }
+        case MPICommProtocol::PARTIAL_BCAST_GATHER:
+        {
+            m_protocolImpl = std::make_unique<PartialBCastGatherProtocolImplMPI>(m_localComm, m_localInStartRank, m_localInSize, m_localOutStartRank, m_localOutSize, m_localRank, m_isSource);
             break;
         }
         default:
@@ -101,7 +111,7 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
     return true;
 }
 
-bool godrick::mpi::CommunicatorMPI::send(conduit::Node& data) const
+bool godrick::mpi::CommunicatorMPI::send(conduit::Node& data)
 {
     if(!m_protocolImpl)
     {
@@ -111,7 +121,7 @@ bool godrick::mpi::CommunicatorMPI::send(conduit::Node& data) const
     return m_protocolImpl->send(data);
 }
 
-bool godrick::mpi::CommunicatorMPI::receive(std::vector<conduit::Node>& data) const
+bool godrick::mpi::CommunicatorMPI::receive(std::vector<conduit::Node>& data)
 {
     if(!m_protocolImpl)
     {
@@ -119,4 +129,15 @@ bool godrick::mpi::CommunicatorMPI::receive(std::vector<conduit::Node>& data) co
         return false;
     }
     return m_protocolImpl->receive(data);
+}
+
+void godrick::mpi::CommunicatorMPI::flush()
+{
+    if(!m_protocolImpl)
+    {
+        spdlog::error("The protocol implementation is not instanciated.");
+        return;
+    }
+
+    m_protocolImpl->flush();
 }
