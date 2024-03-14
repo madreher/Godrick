@@ -110,6 +110,9 @@ set(GR_EXAMPLES_DIR     ${CMAKE_INSTALL_PREFIX}/examples)
 add_subdirectory(src)
 add_subdirectory(examples)
 
+enable_testing()
+add_subdirectory(tests)
+
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 include(GNUInstallDirs)

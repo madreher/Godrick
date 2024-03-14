@@ -2,6 +2,8 @@ from godrick.task import Task
 from godrick.communicator import Communicator
 import json
 from pathlib import Path
+import os 
+import stat
 
 class Workflow:
     def __init__(self, name:str="defaultworkflow") -> None:
@@ -40,6 +42,9 @@ class Workflow:
     
     def getName(self) -> str:
         return self.name
+    
+    def getConfigurationFile(self) -> str:
+        return f"config.{self.name}.json"
     
     def generateWorkflowConfiguration(self, folder:Path = None):
         config = {}

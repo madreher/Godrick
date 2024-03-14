@@ -1,0 +1,39 @@
+{
+    "tasks": [
+        {
+            "name": "send",
+            "type": "MPI",
+            "inputPorts": [],
+            "outputPorts": [
+                "out"
+            ],
+            "startRank": 0,
+            "nbRanks": 1
+        },
+        {
+            "name": "receive",
+            "type": "MPI",
+            "inputPorts": [
+                "in"
+            ],
+            "outputPorts": [],
+            "startRank": 1,
+            "nbRanks": 3
+        }
+    ],
+    "communicators": [
+        {
+            "name": "myComm",
+            "type": "MPI",
+            "inputPortName": "in",
+            "inputTaskName": "receive",
+            "outputPortName": "out",
+            "outputTaskName": "send",
+            "inStartRank": 1,
+            "inSize": 3,
+            "outStartRank": 0,
+            "outSize": 1,
+            "mpiprotocol": "BROADCAST"
+        }
+    ]
+}

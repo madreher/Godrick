@@ -4,6 +4,9 @@ from godrick.communicator import CommunicatorType
 from typing import Tuple
 from pathlib import Path
 
+import os
+import stat
+
 class OpenMPILauncher():
     def __init__(self) -> None:
         pass
@@ -86,6 +89,9 @@ class OpenMPILauncher():
                 f.write("#! /bin/bash\n\n")
                 f.write(mpirunCommand)
                 f.close()
+
+            # Making the file executable
+            os.chmod(commandfilePath, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE | stat.S_IROTH | stat.S_IXOTH) 
         else:
             # Write the hostfile
             hostfilePath = Path(hostfileName)
@@ -105,6 +111,9 @@ class OpenMPILauncher():
                 f.write("#! /bin/bash\n\n")
                 f.write(mpirunCommand)
                 f.close()
+                
+            # Making the file executable
+            os.chmod(commandfilePath, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE | stat.S_IROTH | stat.S_IXOTH) 
 
         # Now that all the tasks have been processed, all the information required has been
         # associated with the relevant component. We can now generate the configuration for the

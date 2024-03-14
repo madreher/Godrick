@@ -17,10 +17,10 @@ def main():
 
     partitions = cluster.splitNodesByCoreRange([3, 1])
 
-    task1 = MPITask(name="sendPartial", cmdline="bin/sendPartial --name sendPartial --config config.MPIPartialGatherWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+    task1 = MPITask(name="sendPartial", cmdline=f"bin/sendPartial --name sendPartial --config {workflow.getConfigurationFile()}", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
     task1.addOutputPort("out")
     task1.setResources(partitions[0])
-    task2 = MPITask(name="receivePartial", cmdline="bin/receivePartial --name receivePartial --config config.MPIPartialGatherWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+    task2 = MPITask(name="receivePartial", cmdline=f"bin/receivePartial --name receivePartial --config {workflow.getConfigurationFile()}", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
     task2.addInputPort("in")
     task2.setResources(partitions[1])
 
