@@ -38,6 +38,7 @@ public:
     OutputPort(const std::string& name) : Port(name){}
     virtual ~OutputPort() override {}
     bool push(conduit::Node& data) const;
+    void flush() const;
 };
 
 } // godrick

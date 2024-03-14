@@ -43,15 +43,9 @@ int main(int argc, char** argv)
     std::vector<conduit::Node> receivedData;
     if(handler.get("in", receivedData))
     {
-        if(receivedData.size() == 1)
-        {   
-            spdlog::info("Received {} conduit nodes.", receivedData.size());
-            receivedData[0].print_detailed();
-        }
-        else
-        {
-            spdlog::error("The receiver received something different than 1 conduit node during a broadcast.");
-        }
+        spdlog::info("Received {} conduit nodes.", receivedData.size());
+        for(auto & node : receivedData) 
+            node.print_detailed();
     }
     else 
         spdlog::error("Something went wrong when receiving data.");

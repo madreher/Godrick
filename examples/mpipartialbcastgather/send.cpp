@@ -40,29 +40,19 @@ int main(int argc, char** argv)
         exit(-1);
     }
 
-    //auto taskRank = handler.getTaskRank();
-    auto taskComm = handler.getTaskCommunicator();
-    int taskCommSize;
-    MPI_Comm_size(taskComm, &taskCommSize);
-    if(taskCommSize != 1)
-    {
-        spdlog::info("Task {} has to be configured with a single rank ({} detected).", taskName, taskCommSize);
-        handler.close();
-
-        return EXIT_FAILURE;
-    }
-
     // Sending the data
     conduit::Node data;
     uint32_t val = 10;
     data["data"] = val;
     data.print_detailed();
 
-    if(handler.push("out", data))
+    if(handler.push("out", data, true))
         spdlog::info("Data sent from the send task.");
     else
         spdlog::error("Something went wrong when sending the data.");
     
     
     handler.close();
+
+    return EXIT_SUCCESS;
 }

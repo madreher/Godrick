@@ -24,5 +24,6 @@ install(TARGETS
 
 install(FILES 
                     simplempi_partial_bcast_workflow.py
+                    simplempi_partial_gather_workflow.py
             DESTINATION 
                     ${GR_EXAMPLES_DIR}/mpipartialbcastgather)

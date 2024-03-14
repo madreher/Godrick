@@ -29,7 +29,7 @@ std::vector<std::string> godrick::Godrick::getOutputPortList() const
     return keys;
 }
 
-bool godrick::Godrick::push(const std::string& portName, conduit::Node& data) const
+bool godrick::Godrick::push(const std::string& portName, conduit::Node& data, bool autoFlush) const
 {
     if(m_outputPorts.count(portName) == 0)
     {
@@ -37,7 +37,23 @@ bool godrick::Godrick::push(const std::string& portName, conduit::Node& data) co
         return false;
     }
     else 
-        return m_outputPorts.at(portName).push(data);
+    {
+        bool result =  m_outputPorts.at(portName).push(data);
+        if(result && autoFlush)
+            m_outputPorts.at(portName).flush();
+        return result;
+    }
+}
+
+void godrick::Godrick::flush(const std::string& portName)
+{
+    if(m_outputPorts.count(portName) == 0)
+    {
+        spdlog::error("Request to push on the output port {} but the port doesn't exist.", portName);
+        return;
+    }
+
+    m_outputPorts.at(portName).flush();
 }
 
 bool godrick::Godrick::get(const std::string& portName, std::vector<conduit::Node>& data) const

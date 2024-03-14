@@ -9,6 +9,12 @@ bool godrick::OutputPort::push(conduit::Node& data) const
     return result;
 }
 
+void godrick::OutputPort::flush() const
+{
+    for(auto & comm : m_communicators)
+        comm->flush();
+}
+
 bool godrick::InputPort::get(std::vector<conduit::Node>&  data) const
 {
     bool result = true;

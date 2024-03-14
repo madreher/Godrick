@@ -10,6 +10,7 @@ namespace mpi {
 
 struct MsgSentEntry 
 {
+    MsgSentEntry(conduit::Schema& schema) : data(schema){}
     conduit::Node data;
     std::vector<MPI_Request> requests;
 };
@@ -38,13 +39,11 @@ protected:
 
     // Sender side info
     std::vector<int>            m_destinations;         // List of ranks to send 
-    //std::vector<MPI_Request>    m_sentRequests;       // List of requests currently pending
-    //std::vector<conduit::Node>  m_sentMessages;       // List of nodes current pending
     std::vector<MsgSentEntry>   m_transitMessages;
-    int                         m_sentMsgID = 0;     // int because used for mpi tags
+    int                         m_sentMsgID = 0;        // int because used for mpi tags
 
     // Receiver info
-    int                         m_expectedMsgID = 0;     // Next expected message tag to wait for the schema
+    int                         m_expectedMsgID = 0;        // Next expected message tag to wait for the schema
     int                         m_nbExpectedReception = 0;  // How many messages do we expect to receive
     int                         m_firstRankSource = 0;      // Rank of the first source. 1 source in case of broadcast, multiple when gather
 

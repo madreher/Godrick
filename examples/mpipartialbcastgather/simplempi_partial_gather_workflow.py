@@ -13,14 +13,14 @@ def main():
     cluster = ComputeCollection(name="myCluster")
     cluster.initFromHostFile(exampleFile, True)
 
-    workflow = Workflow("MPIPartialBcastWorkflow")
+    workflow = Workflow("MPIPartialGatherWorkflow")
 
-    partitions = cluster.splitNodesByCoreRange([1, 3])
+    partitions = cluster.splitNodesByCoreRange([3, 1])
 
-    task1 = MPITask(name="sendPartial", cmdline="bin/sendPartial --name sendPartial --config config.MPIPartialBcastWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+    task1 = MPITask(name="sendPartial", cmdline="bin/sendPartial --name sendPartial --config config.MPIPartialGatherWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
     task1.addOutputPort("out")
     task1.setResources(partitions[0])
-    task2 = MPITask(name="receivePartial", cmdline="bin/receivePartial --name receivePartial --config config.MPIPartialBcastWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+    task2 = MPITask(name="receivePartial", cmdline="bin/receivePartial --name receivePartial --config config.MPIPartialGatherWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
     task2.addInputPort("in")
     task2.setResources(partitions[1])
 

@@ -23,8 +23,10 @@ public:
     std::vector<std::string> getInputPortList() const;
     std::vector<std::string> getOutputPortList() const;
 
-    bool push(const std::string& portName, conduit::Node& data) const;
+    bool push(const std::string& portName, conduit::Node& data, bool autoFlush = false) const;
+    void flush(const std::string& portName);
     bool get(const std::string& portName, std::vector<conduit::Node>& data) const;
+
 
 protected:
     std::unordered_map<std::string, InputPort>  m_inputPorts;
