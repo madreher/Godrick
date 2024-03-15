@@ -51,6 +51,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}
           pip3 install -r requirements.txt
+          pip3 install -e .
           pytest
 
 
