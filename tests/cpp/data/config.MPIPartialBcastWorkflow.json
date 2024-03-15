@@ -1,0 +1,39 @@
+{
+    "tasks": [
+        {
+            "name": "sendPartial",
+            "type": "MPI",
+            "inputPorts": [],
+            "outputPorts": [
+                "out"
+            ],
+            "startRank": 0,
+            "nbRanks": 1
+        },
+        {
+            "name": "receivePartial",
+            "type": "MPI",
+            "inputPorts": [
+                "in"
+            ],
+            "outputPorts": [],
+            "startRank": 1,
+            "nbRanks": 3
+        }
+    ],
+    "communicators": [
+        {
+            "name": "myComm",
+            "type": "MPI",
+            "inputPortName": "in",
+            "inputTaskName": "receivePartial",
+            "outputPortName": "out",
+            "outputTaskName": "sendPartial",
+            "inStartRank": 1,
+            "inSize": 3,
+            "outStartRank": 0,
+            "outSize": 1,
+            "mpiprotocol": "PARTIAL_BCAST_GATHER"
+        }
+    ]
+}
