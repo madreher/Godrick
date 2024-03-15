@@ -32,7 +32,7 @@ foreach(file ${files})
     target_link_libraries( ${UNIT_EXE_NAME}  ${LINKED_TARGETS})
 
     add_test(  NAME    ${UNIT_TEST_NAME}
-               COMMAND mpiexec -n 4 ${UNIT_EXE_NAME}
+               COMMAND mpiexec -n 4 --oversubscribe ${UNIT_EXE_NAME}
             )
     message("New File: ${file} Test case: ${UNIT_TEST_NAME} Exe name: ${UNIT_EXE_NAME}")
 endforeach()
