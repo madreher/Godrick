@@ -59,6 +59,8 @@ mpirun --hostfile hostfile.MyWorkflow1.txt --rankfile rankfile.MyWorkflow1.txt  
     rankfilePath.unlink()
     hostfilePath.unlink()
     commandfilePath.unlink()
+    configFile = Path(workflow.getConfigurationFile())
+    configFile.unlink()
 
 def test_singleTaskMultipleHostWorkflow():
     # Create resources
@@ -129,6 +131,8 @@ mpirun --hostfile hostfile.MyWorkflow2.txt --rankfile rankfile.MyWorkflow2.txt  
     rankfilePath.unlink()
     hostfilePath.unlink()
     commandfilePath.unlink()
+    configFile = Path(workflow.getConfigurationFile())
+    configFile.unlink()
 
 def test_multipleTaskMultipleHostWorkflow():
     # Create resources
@@ -208,6 +212,8 @@ mpirun --hostfile hostfile.MyWorkflow3.txt --rankfile rankfile.MyWorkflow3.txt  
     rankfilePath.unlink()
     hostfilePath.unlink()
     commandfilePath.unlink()
+    configFile = Path(workflow.getConfigurationFile())
+    configFile.unlink()
 
 def test_multipleTaskMultipleHostSplitCoresWorkflow():
     # Create resources
@@ -287,6 +293,8 @@ mpirun --hostfile hostfile.MyWorkflow4.txt --rankfile rankfile.MyWorkflow4.txt  
     rankfilePath.unlink()
     hostfilePath.unlink()
     commandfilePath.unlink()
+    configFile = Path(workflow.getConfigurationFile())
+    configFile.unlink()
 
 def test_multipleTaskMultipleHostPerSocketWorkflow():
     # Create resources
@@ -360,6 +368,8 @@ mpirun --hostfile hostfile.MyWorkflow5.txt --rankfile rankfile.MyWorkflow5.txt  
     rankfilePath.unlink()
     hostfilePath.unlink()
     commandfilePath.unlink()
+    configFile = Path(workflow.getConfigurationFile())
+    configFile.unlink()
 
 def test_multipleTaskMultipleHostPerNodeWorkflow():
     # Create resources
@@ -433,10 +443,5 @@ mpirun --hostfile hostfile.MyWorkflow6.txt --rankfile rankfile.MyWorkflow6.txt  
     rankfilePath.unlink()
     hostfilePath.unlink()
     commandfilePath.unlink()
-
-    # Generate the configuration file
-    workflow.generateWorkflowConfiguration()
-
-    # Check that the file exist
-    configfilePath = Path("config.MyWorkflow6.json")
-    assert configfilePath.is_file()
+    configFile = Path(workflow.getConfigurationFile())
+    configFile.unlink()
