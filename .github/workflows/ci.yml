@@ -1,3 +1,5 @@
+name: Godrick CI/CD
+
 on:
   push:
     branches:
