@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  run_builder:
+    name: deploy to staging
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: GetConduit
+        run: |
+         mkdir conduit
+         cd conduit
+         git clone --recursive https://github.com/llnl/conduit.git .
+         mkdir build
+         cd build
+         cmake ../src -DCMAKE_INSTALL_PREFIX:PATH=$PWD/../../conduit_install -DENABLE_MPI:BOOL=TRUE
+         make
+         make install 
+         ls $PWD/../../conduit_install
