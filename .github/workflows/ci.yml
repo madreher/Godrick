@@ -19,7 +19,7 @@ jobs:
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
       - name: Checkout
         uses: actions/checkout@v4
-      - name: GetConduit
+      - name: Build Conduit
         run: |
          sudo apt-get install -y libopenmpi-dev
          mkdir conduit
@@ -28,6 +28,34 @@ jobs:
          mkdir build
          cd build
          cmake ../src -DCMAKE_INSTALL_PREFIX:PATH=$PWD/../../conduit_install -DENABLE_MPI:BOOL=TRUE
-         make
+         make -j
          make install 
          ls $PWD/../../conduit_install
+      - name: Install Conan
+        run: |
+          echo $PWD
+          sudo apt install -y python3-pip
+          pip3 install conan==1.60
+      - name: Configure Godrick
+        run: |
+          cd ${{ github.workspace }}
+          mkdir build
+          cd build
+          export CONDUIT_PREFIX=${{ github.workspace }}/conduit_install
+          ../run_cmake_script.sh
+      - name: Compile Godrick
+        run: |
+          cd ${{ github.workspace }}/build
+          make -j
+      - name: Unit test Python
+        run: |
+          cd ${{ github.workspace }}
+          pip3 install -r requirements.txt
+          pip3 install -e .
+          pytest tests/
+      - name: Unit test CPP
+        run: |
+          cd ${{ github.workspace }}/build
+          ctest --output-on-failure
+
+

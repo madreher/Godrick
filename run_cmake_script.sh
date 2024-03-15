@@ -45,7 +45,7 @@ fi
 # Build configuration
 BUILD_CONFIG=Release
 INSTALL_PATH=$PWD/install
-CONDUIT_PREFIX=/home/matthieu/dev/opt
+CONDUIT_PREFIX=${CONDUIT_PREFIX:-/home/matthieu/dev/opt}
 
 pushd ${DIR}
 git submodule update --init
