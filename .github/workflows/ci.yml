@@ -47,5 +47,10 @@ jobs:
         run: |
           cd ${{ github.workspace }}/build
           make -j
+      - name: Unit test Python
+        run: |
+          cd ${{ github.workspace }}
+          pip3 install -r requirements.txt
+          pytest
 
 
