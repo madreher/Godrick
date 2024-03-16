@@ -29,6 +29,14 @@ foreach(file ${files})
 
     add_executable( ${UNIT_EXE_NAME}  ${file} )
 
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set_target_properties(${UNIT_EXE_NAME} 
+            PROPERTIES
+                BUILD_RPATH ${CMAKE_CURRENT_BINARY_DIR}
+                INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib    
+            )
+    endif()
+
     target_link_libraries( ${UNIT_EXE_NAME}  ${LINKED_TARGETS})
 
     add_test(  NAME    ${UNIT_TEST_NAME}

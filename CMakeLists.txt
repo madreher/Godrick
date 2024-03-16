@@ -13,7 +13,7 @@ project(Godrick
 
 if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake )
     include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-    conan_basic_setup(NO_OUTPUT_DIRS TARGETS)
+    conan_basic_setup(NO_OUTPUT_DIRS TARGETS KEEP_RPATHS)
 else()
     message(FATAL_ERROR "\n\nERROR: \nConan config file not found. You need to call the following from the build directory first: \n  conan profile new qt_cmake_autodetect --detect --force\n  conan install -s compiler.libcxx=libstdc++11  ${CMAKE_SOURCE_DIR} --build missing")
 endif()
@@ -85,6 +85,14 @@ endif()
 
 find_package(Conduit REQUIRED)        
 if(WIN32)
+target_link_libraries( GR_project_libraries
+    INTERFACE
+        CONAN_PKG::spdlog
+        CONAN_PKG::lyra
+        CONAN_PKG::nlohmann_json
+        conduit::conduit
+)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 target_link_libraries( GR_project_libraries
     INTERFACE
         CONAN_PKG::spdlog
