@@ -11,6 +11,7 @@ project(Godrick
             ${GR_VERSION_MAJOR}.${GR_VERSION_MINOR}.${GR_VERSION_PATCH}
         )
 
+# Reference for RPATH with conan: https://docs.conan.io/1/howtos/manage_shared_libraries/rpaths.html
 if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake )
     include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup(NO_OUTPUT_DIRS TARGETS KEEP_RPATHS)
@@ -83,6 +84,10 @@ if(${GR_MPI_TRANSPORT})
     find_package(MPI REQUIRED)
 endif()
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(MACOSX TRUE)
+endif()
+
 find_package(Conduit REQUIRED)        
 if(WIN32)
 target_link_libraries( GR_project_libraries
@@ -92,7 +97,7 @@ target_link_libraries( GR_project_libraries
         CONAN_PKG::nlohmann_json
         conduit::conduit
 )
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+elseif(MACOSX)
 target_link_libraries( GR_project_libraries
     INTERFACE
         CONAN_PKG::spdlog

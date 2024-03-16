@@ -29,7 +29,7 @@ foreach(file ${files})
 
     add_executable( ${UNIT_EXE_NAME}  ${file} )
 
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if(MACOSX)
         set_target_properties(${UNIT_EXE_NAME} 
             PROPERTIES
                 BUILD_RPATH ${CMAKE_CURRENT_BINARY_DIR}
