@@ -12,7 +12,7 @@ jobs:
   run_builder:
     name: deploy to staging
     runs-on: ubuntu-22.04
-    persmissions:
+    permissions:
       pull-requests: write
       contents: write
     steps:
