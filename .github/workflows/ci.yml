@@ -12,6 +12,9 @@ jobs:
   run_builder:
     name: deploy to staging
     runs-on: ubuntu-22.04
+    persmissions:
+      pull-requests: write
+      contents: write
     steps:
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
