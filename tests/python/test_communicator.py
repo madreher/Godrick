@@ -38,4 +38,3 @@ def test_MPICommunicator():
     with open(configFile) as f:
         doc = f.read()
         print(doc)
-    raise RuntimeError()
