@@ -9,7 +9,8 @@ on:
 env:
   ENABLE_CPP_COVERAGE: True
 jobs:
-  coverage:
+  run_builder:
+    name: cpp coverage
     runs-on: ubuntu-latest
 
     steps:
