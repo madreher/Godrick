@@ -49,13 +49,15 @@ jobs:
           make -j
 
       - name: CTest
-        working-directory: ${{runner.workspace}}/build
         shell: bash
-        run: ctest
+        run:  |
+          cd ${{ github.workspace }}/build
+          ctest
 
       - name: Coverage
-        working-directory: ${{runner.workspace}}/build
         shell: bash
+        run:  |
+          cd ${{ github.workspace }}/build
         run: make coverage
 
       - name: Coveralls
