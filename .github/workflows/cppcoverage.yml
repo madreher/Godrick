@@ -18,7 +18,7 @@ jobs:
 
       - name: Build Conduit
         run: |
-         sudo apt-get install -y libopenmpi-dev
+         sudo apt-get install -y libopenmpi-dev lcov
          mkdir conduit
          cd conduit
          git clone --recursive https://github.com/llnl/conduit.git .
