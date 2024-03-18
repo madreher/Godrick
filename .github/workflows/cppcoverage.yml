@@ -1,0 +1,65 @@
+name: cppcoverage
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+env:
+  ENABLE_CPP_COVERAGE: True
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Conduit
+        run: |
+         sudo apt-get install -y libopenmpi-dev
+         mkdir conduit
+         cd conduit
+         git clone --recursive https://github.com/llnl/conduit.git .
+         mkdir build
+         cd build
+         cmake ../src -DCMAKE_INSTALL_PREFIX:PATH=$PWD/../../conduit_install -DENABLE_MPI:BOOL=TRUE
+         make -j
+         make install 
+         ls $PWD/../../conduit_install
+
+      - name: Install Conan
+        run: |
+          echo $PWD
+          sudo apt install -y python3-pip
+          pip3 install conan==1.60
+
+      - name: Configure Godrick
+        run: |
+          cd ${{ github.workspace }}
+          mkdir build
+          cd build
+          export CONDUIT_PREFIX=${{ github.workspace }}/conduit_install
+          ../run_cmake_script.sh
+
+      - name: Compile Godrick
+        run: |
+          cd ${{ github.workspace }}/build
+          make -j
+
+      - name: CTest
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: ctest
+
+      - name: Coverage
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: make coverage
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          path-to-lcov: ${{runner.workspace}}/build/coverage.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
