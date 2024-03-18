@@ -59,7 +59,7 @@ jobs:
         shell: bash
         run:  |
           cd ${{ github.workspace }}/build
-        run: make coverage
+          make coverage
 
       - name: Coveralls
         uses: coverallsapp/github-action@master
