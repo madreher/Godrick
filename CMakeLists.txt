@@ -23,7 +23,8 @@ endif()
 # Buid options
 #########################################################
 
-set(GR_MPI_TRANSPORT TRUE CACHE BOOL "Compile with support for MPI tasks and communicators.")
+set(GR_MPI_TRANSPORT                TRUE CACHE BOOL "Compile with support for MPI tasks and communicators.")
+set(GR_ENABLE_CPP_COVERAGE          FALSE CACHE BOOL "Enable coverage for c++ code.")
 
 #########################################################
 # Other targets
@@ -119,6 +120,26 @@ endif()
 set(GR_BIN_DIR 			${CMAKE_INSTALL_PREFIX}/bin)
 set(GR_LIB_DIR 			${CMAKE_INSTALL_PREFIX}/lib)
 set(GR_EXAMPLES_DIR     ${CMAKE_INSTALL_PREFIX}/examples)
+
+# Coverage setup if enable 
+if(${GR_ENABLE_CPP_COVERAGE})
+
+    # Force build to debug and add coverage flags
+    set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_CXX_FLAGS "-O0 -coverage")
+
+    # Look for the necessary utility programs
+    find_program(LCOV lcov REQUIRED)
+    find_program(GENHTML genhtml REQUIRED)
+    
+    # Add coverage target 
+    add_custom_target(coverage
+    # gather data
+    COMMAND ${LCOV} --directory ${CMAKE_SOURCE_DIR} --capture --output-file coverage.info --no-external
+    # generate report
+    COMMAND ${GENHTML} --demangle-cpp -o coverage coverage.info
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
 
 add_subdirectory(src)
 add_subdirectory(examples)
