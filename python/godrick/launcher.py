@@ -9,9 +9,14 @@ import stat
 
 class OpenMPILauncher():
     def __init__(self) -> None:
-        pass
+        self.folder = None
+        self.hostfilePath = None
+        self.rankfilePath = None
+        self.commandfilePath = None
 
     def generateOutputFiles(self, workflow:Workflow, folder:Path = None):
+        self.folder = folder
+
         tasks = workflow.getTasks()
         if len(tasks) == 0:
             raise RuntimeError("Attempting to generate commands from an empty worklow. Abording.")
@@ -72,48 +77,48 @@ class OpenMPILauncher():
             folder.mkdir(parents=True, exist_ok=True)
 
             # Write the hostfile
-            hostfilePath = folder / hostfileName
-            with open(hostfilePath, "w") as f:
+            self.hostfilePath = folder / hostfileName
+            with open(self.hostfilePath, "w") as f:
                 f.write(hostfileContent)
                 f.close()
 
             # Write the rankfile
-            rankfilePath = folder / rankfileName
-            with open(rankfilePath, "w") as f:
+            self.rankfilePath = folder / rankfileName
+            with open(self.rankfilePath, "w") as f:
                 f.write(rankfileContent)
                 f.close()
 
             # Write the command file
-            commandfilePath = folder / commandfileName
-            with open(commandfilePath, "w") as f:
+            self.commandfilePath = folder / commandfileName
+            with open(self.commandfilePath, "w") as f:
                 f.write("#! /bin/bash\n\n")
                 f.write(mpirunCommand)
                 f.close()
 
             # Making the file executable
-            os.chmod(commandfilePath, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE | stat.S_IROTH | stat.S_IXOTH) 
+            os.chmod(self.commandfilePath, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE | stat.S_IROTH | stat.S_IXOTH) 
         else:
             # Write the hostfile
-            hostfilePath = Path(hostfileName)
-            with open(hostfilePath, "w") as f:
+            self.hostfilePath = Path(hostfileName)
+            with open(self.hostfilePath, "w") as f:
                 f.write(hostfileContent)
                 f.close()
 
             # Write the rankfile
-            rankfilePath = Path(rankfileName)
-            with open(rankfilePath, "w") as f:
+            self.rankfilePath = Path(rankfileName)
+            with open(self.rankfilePath, "w") as f:
                 f.write(rankfileContent)
                 f.close()
 
             # Write the command file
-            commandfilePath = Path(commandfileName)
-            with open(commandfilePath, "w") as f:
+            self.commandfilePath = Path(commandfileName)
+            with open(self.commandfilePath, "w") as f:
                 f.write("#! /bin/bash\n\n")
                 f.write(mpirunCommand)
                 f.close()
-                
+
             # Making the file executable
-            os.chmod(commandfilePath, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE | stat.S_IROTH | stat.S_IXOTH) 
+            os.chmod(self.commandfilePath, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE | stat.S_IROTH | stat.S_IXOTH) 
 
         # Now that all the tasks have been processed, all the information required has been
         # associated with the relevant component. We can now generate the configuration for the
@@ -203,12 +208,34 @@ class OpenMPILauncher():
 
         return hostfile, rankfile, commandline, rankOffset + nbRanks
 
+    def removeFiles(self) -> None:
+        
+        if self.rankfilePath is not None and self.rankfilePath.is_file():
+            self.rankfilePath.unlink()
+
+        if self.hostfilePath is not None and self.hostfilePath.is_file():
+            self.hostfilePath.unlink()
+
+        if self.commandfilePath is not None and self.commandfilePath.is_file():
+            self.commandfilePath.unlink()
 
 
 class MainLauncher:
     def __init__(self) -> None:
-        pass
+        self.launchers = []
+        self.workflow = None
         
-    def generateOutputFiles(self, workflow:Workflow):
+    def generateOutputFiles(self, workflow:Workflow, folder:Path = None):
+        # For now, we only support full MPI workflows, will be extended in future versions.
         mpiLauncher = OpenMPILauncher()
-        mpiLauncher.generateOutputFiles(workflow=workflow)
+        mpiLauncher.generateOutputFiles(workflow=workflow, folder=folder)
+
+        self.launchers.append(mpiLauncher)
+        self.workflow = workflow
+
+    def removeFiles(self) -> None:
+        for launcher in self.launchers:
+            launcher.removeFiles()
+        if self.workflow is not None:
+            self.workflow.removeFiles()
+

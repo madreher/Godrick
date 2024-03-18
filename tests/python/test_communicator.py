@@ -6,6 +6,7 @@ from godrick.communicator import MPICommunicator, MPICommunicatorProtocol
 
 import os
 from pathlib import Path
+import json
 
 def test_MPICommunicator():
     exampleFile = os.path.join(Path(__file__).resolve().parent, "../../data/tests/singlehost.txt")
@@ -37,4 +38,25 @@ def test_MPICommunicator():
     assert configFile.is_file()
     with open(configFile) as f:
         doc = f.read()
-        print(doc)
+        data = json.loads(doc)
+
+        # Check the data for the communicator 
+        assert "communicators" in data.keys()
+        assert len(data["communicators"]) == 1
+
+        
+        commDict = data["communicators"][0]
+        assert commDict["name"] == "myComm"
+        assert commDict["type"] == "MPI"
+        assert commDict["mpiprotocol"] == MPICommunicatorProtocol.BROADCAST.name
+        assert commDict["inputPortName"] == "in"
+        assert commDict["inputTaskName"] == "receive"
+        assert commDict["outputPortName"] == "out"
+        assert commDict["outputTaskName"] == "send"
+        assert commDict["inStartRank"] == 1
+        assert commDict["inSize"] == 3
+        assert commDict["outStartRank"] == 0
+        assert commDict["outSize"] == 1
+
+    launcher.removeFiles()
+

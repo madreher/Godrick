@@ -69,3 +69,9 @@ class Workflow:
         with open(configPath, "w") as f:
             json.dump(config, f, indent=4)
             f.close()
+
+    def removeFiles(self) -> None:
+        configFile = Path(self.getConfigurationFile())
+        if configFile.is_file():
+            configFile.unlink()
+
