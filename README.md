@@ -7,4 +7,4 @@ Godrick is an in-situ middlware aiming at coupling HPC simulation codes with ana
 
 # Deps
 
-sudo apt install mpi-default-dev
+sudo apt install mpi-default-dev lcov
