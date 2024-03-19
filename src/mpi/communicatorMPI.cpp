@@ -14,6 +14,10 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
         return false;
     }
 
+    // First initialize from the parent class 
+    if(!godrick::Communicator::initFromJSON(data))
+        return false;
+
     // Get the global ranking information
     m_globalInStartRank     = data.at("inStartRank").get<int>();        // Rank of the INPUT PORT = destination
     m_globalInSize          = data.at("inSize").get<int>();

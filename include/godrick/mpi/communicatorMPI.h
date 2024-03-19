@@ -11,6 +11,18 @@ namespace godrick {
 
 namespace mpi {
 
+enum class MPICommProtocol : uint8_t
+{
+    BROADCAST = 0,
+    PARTIAL_BCAST_GATHER = 1
+};
+
+static std::unordered_map<std::string, MPICommProtocol> strToMPICommProtocol = {
+    {"BROADCAST", MPICommProtocol::BROADCAST},
+    {"PARTIAL_BCAST_GATHER", MPICommProtocol::PARTIAL_BCAST_GATHER}
+};
+
+
 class CommunicatorMPI : public Communicator
 {
 public:
@@ -24,6 +36,8 @@ public:
     virtual void flush() override;
 
 protected:
+    MPICommProtocol m_protocol = MPICommProtocol::BROADCAST;
+
     // Information of the input port (consumer) and output port (producer) in the 
     // global communicator, aka world comm
     int m_globalInStartRank  = -1;

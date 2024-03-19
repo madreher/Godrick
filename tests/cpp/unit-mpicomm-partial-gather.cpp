@@ -36,6 +36,7 @@ SCENARIO("MPI transport with Partial Gather protocol.")
         data["data"] = val;
         data.print_detailed();
         REQUIRE(handler.push("out", data));
+        handler.flush("out");
 
         // Closing the application
         handler.close();

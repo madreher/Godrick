@@ -5,7 +5,7 @@
 
 #include <filesystem>
 
-SCENARIO("MPI transport with Broadcast protocol.")
+SCENARIO("Check ports used during MPI transport with Broadcast protocol.")
 {
     int size_world, rank;
     MPI_Comm_size(MPI_COMM_WORLD, &size_world);
@@ -30,13 +30,13 @@ SCENARIO("MPI transport with Broadcast protocol.")
         std::string taskName = "send";
         REQUIRE(handler.initFromJSON(configPath, taskName));
 
-        // Sending the data
-        conduit::Node data;
-        uint32_t val = 10;
-        data["data"] = val;
-        data.print_detailed();
-        REQUIRE(handler.push("out", data));
-        handler.flush("out");
+        // Check the ports
+        auto inputList = handler.getInputPortList();
+        auto outputList = handler.getOutputPortList();
+
+        REQUIRE(inputList.size() == 0);
+        REQUIRE(outputList.size() == 1);
+        REQUIRE(outputList[0].compare("out") == 0);
 
         // Closing the application
         handler.close();
@@ -46,15 +46,14 @@ SCENARIO("MPI transport with Broadcast protocol.")
         // Receiver code
         std::string taskName = "receive";
         REQUIRE(handler.initFromJSON(configPath, taskName));
-
-        // Receiving the data
-        std::vector<conduit::Node> receivedData;
-        REQUIRE(handler.get("in", receivedData));
         
-        // Check the data received 
-        REQUIRE(receivedData.size() == 1);
-        uint32_t val = 10;
-        REQUIRE(receivedData[0]["data"].as_uint32() == val);
+        // Check the ports
+        auto inputList = handler.getInputPortList();
+        auto outputList = handler.getOutputPortList();
+
+        REQUIRE(inputList.size() == 1);
+        REQUIRE(outputList.size() == 0);
+        REQUIRE(inputList[0].compare("in") == 0);
 
         // Closing the application
         handler.close();
