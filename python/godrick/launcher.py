@@ -1,5 +1,5 @@
 from godrick.workflow import Workflow
-from godrick.task import TaskType, Task, MPIPlacementPolicy
+from godrick.task import TaskType, Task, MPIPlacementPolicy, Process
 from godrick.communicator import CommunicatorType
 from typing import Tuple
 from pathlib import Path
@@ -61,7 +61,7 @@ class OpenMPILauncher():
         # Process the communicators
         for i, comm in enumerate(workflow.getCommunicators()):
             if comm.getCommunicatorType() != CommunicatorType.MPI:
-                raise NotImplementedError("Only MPI communicators are supported for now.")
+                continue
             
             inputTask = workflow.getTaskByName(comm.getInputTaskName())
             comm.setInputMPIRanks(inputTask.getGlobalStartRank(), inputTask.getGlobalNbRank())
@@ -120,10 +120,6 @@ class OpenMPILauncher():
             # Making the file executable
             os.chmod(self.commandfilePath, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE | stat.S_IROTH | stat.S_IXOTH) 
 
-        # Now that all the tasks have been processed, all the information required has been
-        # associated with the relevant component. We can now generate the configuration for the
-        # workflow
-        workflow.generateWorkflowConfiguration()
 
             
 
@@ -155,6 +151,10 @@ class OpenMPILauncher():
         for i, core in enumerate(coreList):
             hostfile += f"{core['hostname']}\n"
             rankfile += f"rank {rankOffset+i}={core['hostname']} slots={core['mainthread']}\n"
+
+            # Create the corresponding process 
+            proc = Process(hostname=core['hostname'], task=task)
+            task.addProcess(proc)
         
         commandline += f" -np {nbCores} {task.getCommandLine()}"
 
@@ -179,6 +179,10 @@ class OpenMPILauncher():
                 slots += f"{core['mainthread']},"
             slots = slots.rstrip(",")
             rankfile += f"rank {rankOffset+i}={core['hostname']} slots={slots}\n"
+
+            # Create the corresponding process 
+            proc = Process(hostname=core['hostname'], task=task)
+            task.addProcess(proc)
         
         commandline += f" -np {nbRanks} {task.getCommandLine()}"
 
@@ -203,6 +207,10 @@ class OpenMPILauncher():
                 slots += f"{core['mainthread']},"
             slots = slots.rstrip(",")
             rankfile += f"rank {rankOffset+i}={core['hostname']} slots={slots}\n"
+
+            # Create the corresponding process 
+            proc = Process(hostname=core['hostname'], task=task)
+            task.addProcess(proc)
         
         commandline += f" -np {nbRanks} {task.getCommandLine()}"
 
@@ -219,6 +227,32 @@ class OpenMPILauncher():
         if self.commandfilePath is not None and self.commandfilePath.is_file():
             self.commandfilePath.unlink()
 
+class ZMQLauncher:
+    def __init__(self) -> None:
+        pass
+
+    def processZMQCommunicator(self, workflow:Workflow):
+        # Parse all the communicators, look for ZMQ types, and setup the addressses
+        communicators = workflow.getCommunicators()
+
+        for communicator in communicators:
+            if communicator.getCommunicatorType() == CommunicatorType.ZMQ:
+                # Search for the task sending data
+                outTask = workflow.getTaskByName(communicator.getOutputTaskName())
+                outProcesses = outTask.getProcessList()
+
+                # Search for the task receiving data
+                inTask = workflow.getTaskByName(communicator.getInputTaskName())
+                inProcesses = inTask.getProcessList()
+
+                # Assign the address to the port information
+                communicator.configureSockets(outProcesses, inProcesses)
+
+                # Mark the communicator
+                communicator.markAsProcessed()
+
+    def removeFiles(self) -> None:
+        pass
 
 class MainLauncher:
     def __init__(self) -> None:
@@ -226,11 +260,23 @@ class MainLauncher:
         self.workflow = None
         
     def generateOutputFiles(self, workflow:Workflow, folder:Path = None):
-        # For now, we only support full MPI workflows, will be extended in future versions.
+        
+        # Process the tasks 
         mpiLauncher = OpenMPILauncher()
         mpiLauncher.generateOutputFiles(workflow=workflow, folder=folder)
 
+        # Process the communicators when necessary
+        zmqLauncher = ZMQLauncher()
+        zmqLauncher.processZMQCommunicator(workflow=workflow)
+
+        # Now that all the tasks have been processed, all the information required has been
+        # associated with the relevant component. We can now generate the configuration for the
+        # workflow
+        workflow.generateWorkflowConfiguration()
+
+
         self.launchers.append(mpiLauncher)
+        self.launchers.append(zmqLauncher)
         self.workflow = workflow
 
     def removeFiles(self) -> None:

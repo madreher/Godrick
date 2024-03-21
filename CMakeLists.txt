@@ -24,6 +24,7 @@ endif()
 #########################################################
 
 set(GR_MPI_TRANSPORT                TRUE CACHE BOOL "Compile with support for MPI tasks and communicators.")
+set(GR_ZMQ_TRANSPORT                TRUE CACHE BOOL "Compile with support for ZMQ communicators.")
 set(GR_ENABLE_CPP_COVERAGE          FALSE CACHE BOOL "Enable coverage for c++ code.")
 
 #########################################################
@@ -81,9 +82,13 @@ add_library(GR_project_libraries INTERFACE )
 target_include_directories( GR_project_libraries
     INTERFACE
         ${CMAKE_SOURCE_DIR}/include)
+
+# This is necessary to do here because MPI has to be found BEFORE
+# finding Conduit. Otherwise, Conduit seems to hide/overwrite the MPI cmake variables 
 if(${GR_MPI_TRANSPORT})
     find_package(MPI REQUIRED)
 endif()
+
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(MACOSX TRUE)

@@ -1,7 +1,9 @@
 #include <godrick/mpi/godrickMPI.h>
 #include <godrick/mpi/utilsMPI.h>
 
-#include <godrick/mpi/communicatorMPI.h>
+
+//#include <godrick/mpi/communicatorMPI.h>
+#include <godrick/communicatorFactory.h>
 
 #include <fstream>
 #include <sstream>
@@ -83,19 +85,20 @@ bool godrick::mpi::GodrickMPI::initFromJSON(const std::string& jsonPath, const s
     // Processing the communicator
     if(data.count("communicators") > 0)
     {
+
         for(auto & comm : data["communicators"])
         {
             if(comm["inputTaskName"].get<std::string>().compare(taskName) == 0 || comm["outputTaskName"].get<std::string>().compare(taskName) == 0)
             {
                 // This communicator is associated with the local task, processing it
                 spdlog::info("Found the communicator {} associated with the local task {}.", comm["name"].get<std::string>(), taskName);
-                if(comm["type"].get<std::string>().compare("MPI") != 0)
+
+                auto commObj = godrick::createCommunicator(comm["type"].get<std::string>());
+                if(!commObj)
                 {
-                    spdlog::error("Wrong communicator type associated with the communicator. This reader can only processed MPI communicators.");
+                    spdlog::error("Unable to create the communicator {} (something wrong in the json configuration file?).", comm["name"].get<std::string>());
                     return false;
                 }
-
-                auto commObj = std::make_shared<CommunicatorMPI>();
                 commObj->initFromJSON(comm);
 
                 // Assign the communicator to its port.

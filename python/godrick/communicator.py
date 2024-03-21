@@ -1,5 +1,7 @@
 from enum import Enum
 from godrick.port import InputPort, OutputPort
+from typing import List
+from godrick.task import Process
 
 class CommunicatorType(Enum):
     MPI = 0,
@@ -8,6 +10,10 @@ class CommunicatorType(Enum):
 class MPICommunicatorProtocol(Enum):
     BROADCAST = 0,
     PARTIAL_BCAST_GATHER = 1
+
+class ZMQCommunicatorProtocol(Enum):
+    PUSH_PULL = 0,
+    PUB_SUB = 1
 
 class Communicator():
     def __init__(self, name:str, type:CommunicatorType) -> None:
@@ -92,6 +98,30 @@ class MPICommunicator(Communicator):
     def setMPIProtocol(self, protocol:MPICommunicatorProtocol) -> None:
         self.protocol = protocol
 
+class ZMQCommunicator(Communicator):
+    def __init__(self, id: str, protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB) -> None:
+        super().__init__(id, CommunicatorType.ZMQ)
+        self.protocol = protocol
+        self.protocolSettings = {}
+
+    def toDict(self) -> dict:
+        result =  super().toDict()
+        result["zmqprotocol"] = self.protocol.name
+        result["protocolSettings"] = self.protocolSettings
+        return result
+
+    def setZMQProtocol(self, protocol:MPICommunicatorProtocol) -> None:
+        self.protocol = protocol
+
+    def configureSockets(self, outputProcesses:List[Process], inputProcesses:List[Process]):
+        if len(outputProcesses) > 0:
+            if self.protocol == ZMQCommunicatorProtocol.PUB_SUB:
+                if len(outputProcesses) > 1:
+                    raise RuntimeError("The ZMQ protocol currently only support single process tasks.")
+                self.protocolSettings["pubaddr"] = outputProcesses[0].hostname
+                self.protocolSettings["pubport"] = 50000
+            else:
+                raise NotImplementedError("The requested ZMQ protocol is currently not supported.")
     
 
     

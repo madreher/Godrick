@@ -1,10 +1,18 @@
+from __future__ import annotations
+
 from godrick.computeResources import ComputeCollection
 from godrick.port import InputPort, OutputPort
 from enum import Enum
+from typing import List
 
 class TaskType(Enum):
     SINGLETON = 0,
     MPI = 0
+
+class Process():
+    def __init__(self, hostname:str, task:Task) -> None:
+        self.hostname = hostname
+        self.task = task
 
 class Task():
     def __init__(self, type:TaskType, name:str, cmdline:str, resources:ComputeCollection = None) -> None:
@@ -70,6 +78,9 @@ class Task():
             raise ValueError(f"The output port {portName} is not declared in the task {self.name}.")
         return self.outputPort[portName]
     
+    def getProcessList(self) -> List[Process]:
+        raise NotImplementedError("Function getProcessList not implemented by a task type")
+    
 class SingletonTask(Task):
     def __init__(self, name:str, cmdline:str, resources:ComputeCollection = None) -> None:
         super().__init__(TaskType.SINGLETON, name, cmdline, resources)  
@@ -90,6 +101,8 @@ class MPITask(Task):
         self.startRank = -1
         self.nbRanks = -1
 
+        self.processes = []
+
     def getPlacementPolicy(self) -> MPIPlacementPolicy:
         return self.placementPolicy
     
@@ -109,3 +122,13 @@ class MPITask(Task):
         result["nbRanks"] = self.nbRanks
 
         return result
+    
+    def addProcess(self, process:Process) -> None:
+        self.processes.append(process)
+    
+    def getProcessList(self) -> List[Process]:
+        if not self.processedByLauncher:
+            raise RuntimeError(f"The Task {self.name} has not being processed yet, unable to determine the process list.")
+        return self.processes
+        
+

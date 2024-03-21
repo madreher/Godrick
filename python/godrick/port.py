@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class Port():
     def __init__(self, name:str, task) -> None:
         self.name = name
@@ -13,6 +16,9 @@ class Port():
     
     def getTaskName(self) -> str:
         return self.task.getName()
+    
+    def getTask(self):
+        return self.task
 
 class InputPort(Port):
     def __init__(self, name: str, task) -> None:
