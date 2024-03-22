@@ -5,13 +5,13 @@
 | Name                               |    Stmts |     Miss |   Cover |   Missing |
 |----------------------------------- | -------: | -------: | ------: | --------: |
 | python/godrick/\_\_init\_\_.py     |        0 |        0 |    100% |           |
-| python/godrick/communicator.py     |       72 |        2 |     97% |    63, 93 |
+| python/godrick/communicator.py     |      102 |       10 |     90% |69, 99, 114, 120, 123-129 |
 | python/godrick/computeResources.py |      198 |       17 |     91% |9, 12, 23, 25, 30, 35-39, 117, 161, 182, 195, 198, 205, 216 |
-| python/godrick/launcher.py         |      163 |        9 |     94% |22, 36, 39, 42, 64, 140, 153, 176, 200 |
-| python/godrick/port.py             |       18 |        2 |     89% |       8-9 |
-| python/godrick/task.py             |       83 |        6 |     93% |50, 55, 60, 65, 70, 75 |
+| python/godrick/launcher.py         |      187 |        8 |     96% |22, 36, 39, 42, 136, 149, 176, 204 |
+| python/godrick/port.py             |       21 |        3 |     86% | 11-12, 21 |
+| python/godrick/task.py             |       98 |        8 |     92% |58, 63, 68, 73, 78, 82, 86, 131 |
 | python/godrick/workflow.py         |       58 |        8 |     86% |16, 22, 26, 28, 37, 55, 61, 66 |
-|                          **TOTAL** |  **592** |   **44** | **93%** |           |
+|                          **TOTAL** |  **664** |   **54** | **92%** |           |
 
 
 ## Setup coverage badge
