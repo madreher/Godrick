@@ -61,6 +61,8 @@ int main(int argc, char** argv)
     data.print_detailed();
 
     // Sending multiple messages in case the subscriber is a bit slow to connect.
+    // If the sender send a message before the receiver is ready, the message 
+    // will be sent to nobody, and the receiver will wait forever.
     uint32_t nbSends = 10;
 
     for(uint32_t i = 0; i < nbSends; ++i)
