@@ -10,14 +10,14 @@
 using json = nlohmann::json;
 
 namespace godrick {
-    
+
 class Communicator
 {
 public:
     Communicator(){}
     virtual ~Communicator(){}
 
-    virtual bool initFromJSON(json& data);
+    virtual bool initFromJSON(json& data, const std::string& taskName);
 
     virtual bool send(conduit::Node& data) = 0;
     virtual bool receive(std::vector<conduit::Node>& data) = 0;

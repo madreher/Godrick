@@ -120,6 +120,11 @@ class ZMQCommunicator(Communicator):
                     raise RuntimeError("The ZMQ protocol currently only support single process tasks.")
                 self.protocolSettings["pubaddr"] = outputProcesses[0].hostname
                 self.protocolSettings["pubport"] = 50000
+            elif self.protocol == ZMQCommunicatorProtocol.PUSH_PULL:
+                if len(outputProcesses) > 1:
+                    raise RuntimeError("The ZMQ protocol currently only support single process tasks.")
+                self.protocolSettings["pushaddr"] = outputProcesses[0].hostname
+                self.protocolSettings["pushport"] = 50000
             else:
                 raise NotImplementedError("The requested ZMQ protocol is currently not supported.")
     

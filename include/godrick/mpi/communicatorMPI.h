@@ -29,7 +29,7 @@ public:
     CommunicatorMPI() : Communicator(){}
     virtual ~CommunicatorMPI() override {}
 
-    virtual bool initFromJSON(json& data) override;
+    virtual bool initFromJSON(json& data, const std::string& taskName) override;
 
     virtual bool send(conduit::Node& data) override;
     virtual bool receive(std::vector<conduit::Node>& data) override;

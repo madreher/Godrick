@@ -1,5 +1,4 @@
 #include <godrick/communicatorFactory.h>
-
 #ifdef GODRICK_MPI
 #include <godrick/mpi/communicatorMPI.h>
 #endif
@@ -7,10 +6,6 @@
 #include <godrick/zmq/communicatorZMQ.h>
 #endif
 
-// Forward declaration. The relevant classes are defined in their own library, not the core library
-
-
-#include <unordered_map>
 #include <spdlog/spdlog.h>
 
 std::shared_ptr<godrick::Communicator> godrick::createCommunicator(const std::string& type)

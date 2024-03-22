@@ -1,9 +1,7 @@
 #include <godrick/mpi/godrickMPI.h>
 #include <godrick/mpi/utilsMPI.h>
-
-
-//#include <godrick/mpi/communicatorMPI.h>
 #include <godrick/communicatorFactory.h>
+
 
 #include <fstream>
 #include <sstream>
@@ -99,7 +97,7 @@ bool godrick::mpi::GodrickMPI::initFromJSON(const std::string& jsonPath, const s
                     spdlog::error("Unable to create the communicator {} (something wrong in the json configuration file?).", comm["name"].get<std::string>());
                     return false;
                 }
-                commObj->initFromJSON(comm);
+                commObj->initFromJSON(comm, taskName);
 
                 // Assign the communicator to its port.
                 if(comm["inputTaskName"].get<std::string>().compare(taskName) == 0)
