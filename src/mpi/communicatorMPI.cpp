@@ -6,7 +6,7 @@
 
 #include <conduit/conduit_relay_mpi.hpp>
 
-bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
+bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data, const std::string& taskName)
 {
     if(data.count("type") == 0 || data.at("type").get<std::string>().compare("MPI") != 0)
     {
@@ -15,7 +15,7 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data)
     }
 
     // First initialize from the parent class 
-    if(!godrick::Communicator::initFromJSON(data))
+    if(!godrick::Communicator::initFromJSON(data, taskName))
         return false;
 
     // Get the global ranking information

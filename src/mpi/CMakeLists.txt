@@ -17,16 +17,19 @@ target_link_libraries( ${library_MODULE}
                                 GR_project_libraries
                                 GR_project_options
                                 GR_project_warnings
-                                GodrickLib
                                 conduit::conduit_mpi
                                 MPI::MPI_CXX
                      )
-
+target_compile_definitions(${library_MODULE} 
+                            PUBLIC
+                                GODRICK_MPI)
 target_link_libraries( ${library_MODULE}
                          PRIVATE
                             GR_project_warnings
                             GR_project_options
                   )
+
+
 target_compile_features(   ${library_MODULE} PUBLIC cxx_std_20)
 
 include(GNUInstallDirs)

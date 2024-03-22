@@ -1,9 +1,8 @@
-# Build the base library
 #=======================================
-set(library_MODULE GodrickLib   )
+set(library_MODULE GodrickZMQLib   )
 #=======================================
 
-file(GLOB files "*.cpp")
+file(GLOB_RECURSE files "*.cpp")
 
 add_library( ${library_MODULE} SHARED ${files} )
 
@@ -18,7 +17,12 @@ target_link_libraries( ${library_MODULE}
                                 GR_project_libraries
                                 GR_project_options
                                 GR_project_warnings
+                                CONAN_PKG::cppzmq
                      )
+
+target_compile_definitions(${library_MODULE} 
+                     PUBLIC
+                         GODRICK_ZMQ)
 
 target_link_libraries( ${library_MODULE}
                          PRIVATE
@@ -29,12 +33,3 @@ target_compile_features(   ${library_MODULE} PUBLIC cxx_std_20)
 
 include(GNUInstallDirs)
 install(TARGETS ${library_MODULE} DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-if(${GR_MPI_TRANSPORT})
-    add_subdirectory(mpi)
-    target_link_libraries(${library_MODULE} PUBLIC GodrickMPILib)
-endif()
-if(${GR_ZMQ_TRANSPORT})
-    add_subdirectory(zmq)
-    target_link_libraries(${library_MODULE} PUBLIC GodrickZMQLib)
-endif()

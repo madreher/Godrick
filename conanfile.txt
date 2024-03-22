@@ -4,6 +4,7 @@ catch2/2.13.9
 lyra/1.5.1
 range-v3/0.11.0
 nlohmann_json/3.11.2
+cppzmq/4.7.1
 
 [generators]
 cmake

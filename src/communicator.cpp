@@ -2,8 +2,9 @@
 
 #include <spdlog/spdlog.h>
 
-bool godrick::Communicator::initFromJSON(json& data)
+bool godrick::Communicator::initFromJSON(json& data, const std::string& taskName)
 {
+    (void)taskName;
     if(!data.contains("name"))
     {
         spdlog::error("Unable to find the name of a communicator when loading.");
