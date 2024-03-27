@@ -25,14 +25,16 @@
         {
             "name": "myComm",
             "type": "ZMQ",
+            "open": "CLOSED",
             "inputPortName": "in",
             "inputTaskName": "receivepushpull",
             "outputPortName": "out",
             "outputTaskName": "sendpushpull",
             "zmqprotocol": "PUSH_PULL",
             "protocolSettings": {
-                "pushaddr": "localhost",
-                "pushport": 50000
+                "addr": "localhost",
+                "port": 50000,
+                "bindingside": "ZMQ_BIND_SENDER"
             }
         }
     ]

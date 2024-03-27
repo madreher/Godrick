@@ -7,6 +7,11 @@ class CommunicatorType(Enum):
     MPI = 0,
     ZMQ = 1
 
+class CommunicatorOpenFlag(Enum):
+    CLOSED = 0,
+    OPEN_INPUT = 1,
+    OPEN_OUTPUT = 2
+
 class MPICommunicatorProtocol(Enum):
     BROADCAST = 0,
     PARTIAL_BCAST_GATHER = 1
@@ -23,6 +28,7 @@ class Communicator():
         self.inputTaskName = ""
         self.outputPortName = ""
         self.outputTaskName = ""
+        self.openFlag = CommunicatorOpenFlag.CLOSED
 
         self.processedByLauncher = False    # Flag used when creating the command line
                                             # This will be switched when a launcher convert the Task to command line
@@ -32,6 +38,12 @@ class Communicator():
     
     def getCommunicatorType(self) -> CommunicatorType:
         return self.type
+
+    def getCommunicatorOpenFlag(self) -> CommunicatorOpenFlag:
+        return self.openFlag
+    
+    def setCommunicatorOpenFlag(self, flag: CommunicatorOpenFlag) -> None:
+        self.openFlag = flag
 
     def getInputTaskName(self) -> str:
         return self.inputTaskName
@@ -51,6 +63,7 @@ class Communicator():
         result = {}
         result["name"] = self.name
         result["type"] = self.type.name
+        result["open"] = self.openFlag.name
         result["inputPortName"] = self.inputPortName
         result["inputTaskName"] = self.inputTaskName
         result["outputPortName"] = self.outputPortName
@@ -59,7 +72,14 @@ class Communicator():
         return result
 
     def isValid(self):
-        return self.inputPortName != "" and self.inputTaskName != "" and self.outputPortName != "" and self.outputTaskName != ""
+        if self.openFlag == CommunicatorOpenFlag.CLOSED:
+            return self.inputPortName != "" and self.inputTaskName != "" and self.outputPortName != "" and self.outputTaskName != ""
+        elif self.openFlag == CommunicatorOpenFlag.OPEN_INPUT:
+            return self.inputPortName != "" and self.inputTaskName != ""
+        elif self.openFlag == CommunicatorOpenFlag.OPEN_OUTPUT:
+            return self.outputPortName != "" and self.outputTaskName != ""
+        else:
+            return False
     
     def hasBeenProcessed(self) -> bool:
         return self.processedByLauncher
@@ -98,11 +118,21 @@ class MPICommunicator(Communicator):
     def setMPIProtocol(self, protocol:MPICommunicatorProtocol) -> None:
         self.protocol = protocol
 
+    def setCommunicatorOpenFlag(self, flag: CommunicatorOpenFlag) -> None:
+        if flag != CommunicatorOpenFlag.CLOSED:
+            raise ValueError("The MPI Communicator cannot be open.")
+        super().setCommunicatorOpenFlag(flag=flag)
+
+class ZMQBindingSide(Enum):
+    ZMQ_BIND_RECEIVER = 0,
+    ZMQ_BIND_SENDER = 1
+
 class ZMQCommunicator(Communicator):
     def __init__(self, id: str, protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB) -> None:
         super().__init__(id, CommunicatorType.ZMQ)
         self.protocol = protocol
         self.protocolSettings = {}
+        self.bindingSide = ZMQBindingSide.ZMQ_BIND_SENDER
 
     def toDict(self) -> dict:
         result =  super().toDict()
@@ -114,19 +144,22 @@ class ZMQCommunicator(Communicator):
         self.protocol = protocol
 
     def configureSockets(self, outputProcesses:List[Process], inputProcesses:List[Process]):
-        if len(outputProcesses) > 0:
-            if self.protocol == ZMQCommunicatorProtocol.PUB_SUB:
-                if len(outputProcesses) > 1:
-                    raise RuntimeError("The ZMQ protocol currently only support single process tasks.")
-                self.protocolSettings["pubaddr"] = outputProcesses[0].hostname
-                self.protocolSettings["pubport"] = 50000
-            elif self.protocol == ZMQCommunicatorProtocol.PUSH_PULL:
-                if len(outputProcesses) > 1:
-                    raise RuntimeError("The ZMQ protocol currently only support single process tasks.")
-                self.protocolSettings["pushaddr"] = outputProcesses[0].hostname
-                self.protocolSettings["pushport"] = 50000
-            else:
-                raise NotImplementedError("The requested ZMQ protocol is currently not supported.")
+        if (self.openFlag == CommunicatorOpenFlag.OPEN_OUTPUT or  self.openFlag == CommunicatorOpenFlag.CLOSED ) and len(outputProcesses) != 1:
+            raise RuntimeError("The ZMQ communicator {} has an output but only 1 process output is supported ({} detected.)", self.name, len(outputProcesses))
+
+        if (self.openFlag == CommunicatorOpenFlag.OPEN_INPUT or  self.openFlag == CommunicatorOpenFlag.CLOSED ) and len(inputProcesses) != 1:
+            raise RuntimeError("The ZMQ communicator {} has an input but only 1 process output is supported ({} detected.)", self.name, len(outputProcesses))
+
+        if self.protocol == ZMQCommunicatorProtocol.PUB_SUB:
+            self.protocolSettings["addr"] = outputProcesses[0].hostname
+            self.protocolSettings["port"] = 50000
+            self.protocolSettings["bindingside"] = self.bindingSide.name
+        elif self.protocol == ZMQCommunicatorProtocol.PUSH_PULL:
+            self.protocolSettings["addr"] = outputProcesses[0].hostname
+            self.protocolSettings["port"] = 50000
+            self.protocolSettings["bindingside"] = self.bindingSide.name
+        else:
+            raise NotImplementedError("The requested ZMQ protocol is currently not supported.")
     
 
     
