@@ -2,7 +2,7 @@ from godrick.workflow import Workflow
 from godrick.task import MPITask, MPIPlacementPolicy
 from godrick.launcher import MainLauncher
 from godrick.computeResources import ComputeCollection
-from godrick.communicator import MPICommunicator
+from godrick.communicator import MPIPairedCommunicator
 
 import os
 from pathlib import Path
@@ -24,9 +24,9 @@ def main():
     task2.addInputPort("in")
     task2.setResources(partitions[1])
 
-    comm1 = MPICommunicator("myComm")
-    comm1.connectInput(task2.getInputPort("in"))
-    comm1.connectOutput(task1.getOutputPort("out"))
+    comm1 = MPIPairedCommunicator("myComm")
+    comm1.connectToInputPort(task2.getInputPort("in"))
+    comm1.connectToOutputPort(task1.getOutputPort("out"))
 
     workflow.declareTask(task1)
     workflow.declareTask(task2)

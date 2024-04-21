@@ -8,9 +8,9 @@ constexpr auto g_bindingSideReceiver = "ZMQ_BIND_RECEIVER";
 
 bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string& taskName)
 {
-    if(data.count("type") == 0 || data.at("type").get<std::string>().compare("ZMQ") != 0)
+    if(data.count("transport") == 0 || data.at("transport").get<std::string>().compare("ZMQ") != 0)
     {
-        spdlog::error("Wrong communicator type associated with the communicator. This reader can only process ZMQ commuinicator.");
+        spdlog::error("Wrong communicator transport associated with the communicator. This reader can only process ZMQ commuinicator.");
         return false;
     }
 
@@ -84,6 +84,7 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
             std::string addr = data["protocolSettings"].at("addr").get<std::string>();
             int port = data["protocolSettings"].at("port").get<int>();
             std::string bindingSide = data["protocolSettings"].at("bindingside").get<std::string>();
+
             bool bindOnSender = (bindingSide.compare(g_bindingSideSender) == 0);
 
             std::stringstream ss;

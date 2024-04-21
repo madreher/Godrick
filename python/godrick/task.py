@@ -4,6 +4,7 @@ from godrick.computeResources import ComputeCollection
 from godrick.port import InputPort, OutputPort
 from enum import Enum
 from typing import List
+import copy
 
 class TaskType(Enum):
     SINGLETON = 0,
@@ -46,9 +47,24 @@ class Task():
         result = {}
         result["name"] = self.name
         result["type"] = self.type.name
+        result["class"] = self.__class__.__name__
         result["inputPorts"] = list(self.inputPort.keys())
         result["outputPorts"] = list(self.outputPort.keys())
         return result
+    
+    def fromDict(self, data:dict, version:int) -> None:
+
+        self.name = data["name"]
+        self.type.name = data["type"]
+        inputs = data["inputPorts"]
+        for input in inputs:
+            self.addInputPort(input)
+        outputs = data["outputPorts"]
+        for output in outputs:
+            self.addOutputPort(output)
+
+    def addProcess(self, process:Process) -> None:
+        self.processes.append(process)
     
     def hasBeenProcessed(self) -> bool:
         return self.processedByLauncher
@@ -57,6 +73,7 @@ class Task():
         if self.processedByLauncher:
             raise RuntimeError(f"Trying to mark the task {self.name} as processed but it was already processed. Called multiple time a launcher?")
         self.processedByLauncher = True
+
 
     def addInputPort(self, portName:str) -> None:
         if portName in self.inputPort.keys():
@@ -120,9 +137,19 @@ class MPITask(Task):
         result =  super().toDict()
         result["startRank"] = self.startRank
         result["nbRanks"] = self.nbRanks
+        result["placementPolicy"] = self.placementPolicy.name
 
         return result
     
+    def fromDict(self, data:dict, version:int) -> None:
+        if data["class"] != self.__name__:
+            raise RuntimeError(f"Trying to parse a json class {data['class']} from the class {self.__name__}.")
+        super().fromDict(data, version)
+
+        self.startRank = data["startRank"]
+        self.nbRanks = data["nbRanks"]
+        self.placementPolicy = MPIPlacementPolicy[data["placementPolicy"]]
+
     def addProcess(self, process:Process) -> None:
         self.processes.append(process)
     
@@ -131,4 +158,22 @@ class MPITask(Task):
             raise RuntimeError(f"The Task {self.name} has not being processed yet, unable to determine the process list.")
         return self.processes
         
+class TaskFactory():
+    def __init__(self) -> None:
+            pass
 
+    def jsonToTask(self, data:dict, version:int=0):
+        taskConversion = {}
+        taskConversion[MPITask.__class__.__name__] = MPITask()
+        taskConversion[SingletonTask.__class__.__name__] = SingletonTask()
+        
+
+        if "class" not in data.keys():
+            raise RuntimeError("Unable to find class in dictionary while attempting to parse a Task.")
+        taskClass = data["class"]
+        if taskClass not in taskConversion.keys():
+            raise RuntimeError(f"Unknown Task class {taskClass}.")
+        taskObject = copy.deepcopy(taskConversion[taskClass])
+        taskObject.fromDict(data, version)
+
+        return taskObject
