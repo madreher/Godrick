@@ -24,7 +24,7 @@
     "communicators": [
         {
             "name": "myComm",
-            "type": "ZMQ",
+            "transport": "ZMQ",
             "open": "CLOSED",
             "inputPortName": "in",
             "inputTaskName": "receivepubsub",
