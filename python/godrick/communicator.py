@@ -208,8 +208,8 @@ class MPIPairedCommunicator(PairedCommunicator):
         return result
     
     def fromDict(self, data:dict, version:int) -> None:
-        if data["class"] != self.__name__:
-            raise RuntimeError(f"Trying to parse a json class {data['class']} from the class {self.__name__}.")
+        if data["class"] != MPIPairedCommunicator.__name__:
+            raise RuntimeError(f"Trying to parse a json class {data['class']} from the class {MPIPairedCommunicator.__name__}.")
         super().fromDict(data, version)
 
         self.inStartRank = data["inStartRank"]

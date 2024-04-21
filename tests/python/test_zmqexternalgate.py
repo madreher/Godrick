@@ -2,7 +2,7 @@ from godrick.workflow import Workflow
 from godrick.task import MPITask, MPIPlacementPolicy
 from godrick.launcher import MainLauncher
 from godrick.computeResources import ComputeCollection
-from godrick.communicator import ZMQGateCommunicator, CommunicatorGateSideFlag, ZMQBindingSide, CommunicatorTransportType
+from godrick.communicator import ZMQGateCommunicator, CommunicatorGateSideFlag, ZMQBindingSide, CommunicatorTransportType, ZMQCommunicatorProtocol
 
 import os
 from pathlib import Path
@@ -53,6 +53,27 @@ def test_ZMQExternalGate():
 
     configFile = Path(workflow2.getConfigurationFile())
     assert configFile.is_file()
+
+    with open(configFile) as f:
+        data = json.load(f)
+
+        assert "communicators" in data.keys()
+        assert "tasks" in data.keys()
+
+        assert len(data["communicators"]) == 1
+
+        commDict = data["communicators"][0]
+        assert commDict["name"] == "receiverSide"
+        assert commDict["transport"] == CommunicatorTransportType.ZMQ.name
+        assert commDict["configured"] == True
+        assert commDict["gateSide"] == CommunicatorGateSideFlag.OPEN_RECEIVER.name
+        assert commDict["portName"] == "in"
+        assert commDict["taskName"] == "receive"
+        assert commDict["class"] == ZMQGateCommunicator.__name__
+        assert commDict["zmqprotocol"] == ZMQCommunicatorProtocol.PUB_SUB.name
+        assert commDict["protocolSettings"]["addr"] == 'machine1'
+        assert commDict["protocolSettings"]["port"] == 50000
+        assert commDict["protocolSettings"]["bindingside"] == ZMQBindingSide.ZMQ_BIND_SENDER.name
 
     launcher1.removeFiles()
     launcher2.removeFiles()

@@ -1,4 +1,4 @@
-from godrick.task import Task
+from godrick.task import Task, TaskFactory
 from godrick.communicator import Communicator, CommunicatorFactory
 import json
 from pathlib import Path
@@ -149,9 +149,20 @@ class Workflow:
                 raise RuntimeError(f"Unable to find the list of communicators in the configuration file {configFilePath}.")
 
             self.name = data["name"]
+            version = data["header"]["version"]
             
             self.tasks.clear()
             self.communicators.clear()
+
+            taskFactory = TaskFactory()
+            for taskDict in data["tasks"]:
+                task = taskFactory.jsonToTask(taskDict, version)
+                self.tasks[task.getName()] = task
+
+            commFactory = CommunicatorFactory()
+            for commDict in data["communicators"]:
+                comm = commFactory.jsonToCommunicator(commDict, version)
+                self.communicators[comm.getName()] = comm
 
     def initFromGatesConfigFile(self, configFilePath:Path) -> None:
         if not configFilePath.is_file():

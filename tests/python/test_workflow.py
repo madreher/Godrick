@@ -6,6 +6,7 @@ from godrick.workflow import Workflow
 from godrick.task import MPITask, MPIPlacementPolicy
 from godrick.launcher import MainLauncher
 from godrick.computeResources import ComputeCollection
+from godrick.communicator import MPIPairedCommunicator, MPICommunicatorProtocol
 
 def test_singleTaskSingleHostWorkflow():
     # Create resources
@@ -494,6 +495,61 @@ machine3
         assert content == """#! /bin/bash
 
 mpirun --hostfile hostfile.MyWorkflow7.txt --rankfile rankfile.MyWorkflow7.txt  -np 3 myExecutable1 --args 1 : -np 3 myExecutable2 --args 2"""
+
+    # Cleanup the files after testing
+    launcher.removeFiles()
+
+def test_multipleTaskMultipleHostWorkflowReload():
+    # Create resources
+    exampleFile = os.path.join(Path(__file__).resolve().parent, "../../data/tests/triplehost.txt")
+    cluster = ComputeCollection(name="myCluster")
+    cluster.initFromHostFile(exampleFile, True)
+
+    # Create an empty workflow
+    workflow = Workflow(name="MyWorkflow8")
+
+    # Create two tasks 
+    task1 = MPITask(name="testTask1", cmdline="myExecutable1 --args 1", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+    task1.addOutputPort("out")
+    task2 = MPITask(name="testTask2", cmdline="myExecutable2 --args 2", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+    task2.addInputPort("in")
+
+    myComm = MPIPairedCommunicator(id="mycomm", protocol=MPICommunicatorProtocol.PARTIAL_BCAST_GATHER)
+    myComm.connectToInputPort(task2.getInputPort("in"))
+    myComm.connectToOutputPort(task1.getOutputPort("out"))
+    
+    # Split the cluster 
+    partitions = cluster.selectNodesByRange([1, 2])
+
+    # Assign the resources to the tasks
+    task1.setResources(partitions[0])
+    task2.setResources(partitions[1])
+
+
+    # Add the task to the workflow
+    workflow.declareTask(task=task1)
+    workflow.declareTask(task=task2)
+    workflow.declareCommunicator(myComm)
+
+    # Create a launcher
+    launcher = MainLauncher()
+
+    # Generate the outputs for the workflow
+    launcher.generateOutputFiles(workflow=workflow)
+
+    # Create a new empty workflow and load the previous configuration
+    workflow2 = Workflow()
+    workflow2.initFromWorkflowConfigFile(Path(workflow.getConfigurationFile()))
+
+    communicators = workflow2.getCommunicators()
+    assert len(communicators) == 1
+
+    assert communicators[0].toDict() == myComm.toDict()
+    tasks = workflow2.getTasks()
+    assert len(tasks) == 2
+    assert tasks[0].toDict() == task1.toDict()
+    assert tasks[1].toDict() == task2.toDict()
+
 
     # Cleanup the files after testing
     launcher.removeFiles()

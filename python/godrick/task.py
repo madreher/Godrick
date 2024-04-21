@@ -55,7 +55,7 @@ class Task():
     def fromDict(self, data:dict, version:int) -> None:
 
         self.name = data["name"]
-        self.type.name = data["type"]
+        self.type = TaskType[data["type"]]
         inputs = data["inputPorts"]
         for input in inputs:
             self.addInputPort(input)
@@ -99,7 +99,7 @@ class Task():
         raise NotImplementedError("Function getProcessList not implemented by a task type")
     
 class SingletonTask(Task):
-    def __init__(self, name:str, cmdline:str, resources:ComputeCollection = None) -> None:
+    def __init__(self, name:str = "defaultSingletonTaskName", cmdline:str = "", resources:ComputeCollection = None) -> None:
         super().__init__(TaskType.SINGLETON, name, cmdline, resources)  
 
 class MPIPlacementPolicy(Enum):
@@ -109,7 +109,7 @@ class MPIPlacementPolicy(Enum):
     USERDEFINED = 3
 
 class MPITask(Task):
-    def __init__(self, name:str, cmdline:str, resources:ComputeCollection = None, placementPolicy:MPIPlacementPolicy = MPIPlacementPolicy.ONETASKPERCORE) -> None:
+    def __init__(self, name:str = "defaultMPITask", cmdline:str = "", resources:ComputeCollection = None, placementPolicy:MPIPlacementPolicy = MPIPlacementPolicy.ONETASKPERCORE) -> None:
         super().__init__(TaskType.MPI, name, cmdline, resources)
         self.placementPolicy = placementPolicy
 
@@ -135,6 +135,7 @@ class MPITask(Task):
     
     def toDict(self) -> dict:
         result =  super().toDict()
+        result["class"] = MPITask.__name__
         result["startRank"] = self.startRank
         result["nbRanks"] = self.nbRanks
         result["placementPolicy"] = self.placementPolicy.name
@@ -142,8 +143,8 @@ class MPITask(Task):
         return result
     
     def fromDict(self, data:dict, version:int) -> None:
-        if data["class"] != self.__name__:
-            raise RuntimeError(f"Trying to parse a json class {data['class']} from the class {self.__name__}.")
+        if data["class"] != MPITask.__name__:
+            raise RuntimeError(f"Trying to parse a json class {data['class']} from the class {MPITask.__name__}.")
         super().fromDict(data, version)
 
         self.startRank = data["startRank"]
@@ -164,8 +165,8 @@ class TaskFactory():
 
     def jsonToTask(self, data:dict, version:int=0):
         taskConversion = {}
-        taskConversion[MPITask.__class__.__name__] = MPITask()
-        taskConversion[SingletonTask.__class__.__name__] = SingletonTask()
+        taskConversion[MPITask.__name__] = MPITask()
+        taskConversion[SingletonTask.__name__] = SingletonTask()
         
 
         if "class" not in data.keys():
