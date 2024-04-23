@@ -8,7 +8,7 @@
 
 bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data, const std::string& taskName)
 {
-    if(data.count("type") == 0 || data.at("type").get<std::string>().compare("MPI") != 0)
+    if(data.count("transport") == 0 || data.at("transport").get<std::string>().compare("MPI") != 0)
     {
         spdlog::error("Wrong communicator type associated with the communicator. This reader can only process MPI commuinicator.");
         return false;

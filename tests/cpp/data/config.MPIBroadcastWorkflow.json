@@ -1,34 +1,46 @@
 {
+    "format": "WORKFLOW_CONFIG_FULL",
+    "name": "MPIBroadcastWorkflow",
+    "header": {
+        "version": 0,
+        "generator": "generateWorkflowConfiguration"
+    },
     "tasks": [
         {
             "name": "send",
             "type": "MPI",
+            "class": "MPITask",
             "inputPorts": [],
             "outputPorts": [
                 "out"
             ],
             "startRank": 0,
-            "nbRanks": 1
+            "nbRanks": 1,
+            "placementPolicy": "ONETASKPERCORE"
         },
         {
             "name": "receive",
             "type": "MPI",
+            "class": "MPITask",
             "inputPorts": [
                 "in"
             ],
             "outputPorts": [],
             "startRank": 1,
-            "nbRanks": 3
+            "nbRanks": 3,
+            "placementPolicy": "ONETASKPERCORE"
         }
     ],
     "communicators": [
         {
             "name": "myComm",
-            "type": "MPI",
+            "transport": "MPI",
+            "configured": false,
             "inputPortName": "in",
             "inputTaskName": "receive",
             "outputPortName": "out",
             "outputTaskName": "send",
+            "class": "MPIPairedCommunicator",
             "inStartRank": 1,
             "inSize": 3,
             "outStartRank": 0,

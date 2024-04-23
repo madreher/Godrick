@@ -1,20 +1,32 @@
 from godrick.workflow import Workflow
 from godrick.task import TaskType, Task, MPIPlacementPolicy, Process
-from godrick.communicator import CommunicatorType
+from godrick.communicator import CommunicatorTransportType
 from typing import Tuple
 from pathlib import Path
 
 import os
 import stat
 
-class OpenMPILauncher():
+class TaskSetup:
     def __init__(self) -> None:
+        pass
+
+    def assignProcesses(self, workflow:Workflow, folder:Path = None) -> None :
+        raise NotImplementedError("Function assignProcesses() not implemented by a TaskSetup class.")
+
+    def removeFiles(self) -> None:
+        raise NotImplementedError("Function removeFiles() not implemented by a ProcessAssigner class.")
+
+
+class OpenMPITaskSetup(TaskSetup):
+    def __init__(self) -> None:
+        super().__init__()
         self.folder = None
         self.hostfilePath = None
         self.rankfilePath = None
         self.commandfilePath = None
 
-    def generateOutputFiles(self, workflow:Workflow, folder:Path = None):
+    def assignProcesses(self, workflow:Workflow, folder:Path = None) -> None :
         self.folder = folder
 
         tasks = workflow.getTasks()
@@ -57,20 +69,6 @@ class OpenMPILauncher():
             # Flag the task as been processed
             task.setGlobalRanks(startRank, sizeRank)
             task.markAsProcessed()
-
-        # Process the communicators
-        for i, comm in enumerate(workflow.getCommunicators()):
-            if comm.getCommunicatorType() != CommunicatorType.MPI:
-                continue
-            
-            inputTask = workflow.getTaskByName(comm.getInputTaskName())
-            comm.setInputMPIRanks(inputTask.getGlobalStartRank(), inputTask.getGlobalNbRank())
-
-            outputTask = workflow.getTaskByName(comm.getOutputTaskName())
-            comm.setOutputMPIRanks(outputTask.getGlobalStartRank(), outputTask.getGlobalNbRank())
-
-            # Done setting up the comm, marking it as processed
-            comm.markAsProcessed()
 
         if folder is not None:
             # Create the folder if it doesn't exist
@@ -119,9 +117,6 @@ class OpenMPILauncher():
 
             # Making the file executable
             os.chmod(self.commandfilePath, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE | stat.S_IROTH | stat.S_IXOTH) 
-
-
-            
 
     def appendMPITask(self, task:Task, rankOffset:int) -> Tuple[str, str, str, int]:
         # Return expected: output hostfile, output rankfile, output cmdline, new rankoffset
@@ -215,7 +210,7 @@ class OpenMPILauncher():
         commandline += f" -np {nbRanks} {task.getCommandLine()}"
 
         return hostfile, rankfile, commandline, rankOffset + nbRanks
-
+    
     def removeFiles(self) -> None:
         
         if self.rankfilePath is not None and self.rankfilePath.is_file():
@@ -227,26 +222,51 @@ class OpenMPILauncher():
         if self.commandfilePath is not None and self.commandfilePath.is_file():
             self.commandfilePath.unlink()
 
-class ZMQLauncher:
+class CommunicatorSetup:
     def __init__(self) -> None:
         pass
 
-    def processZMQCommunicator(self, workflow:Workflow):
+    def configureCommunicator(self, workflow:Workflow, folder:Path = None) -> None :
+        raise NotImplementedError("Function configureCommunicator() not implemented by a CommunicatorSetup class.")
+    
+    def removeFiles(self) -> None:
+        pass
+
+class MPICommunicatorSetup(CommunicatorSetup):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def configureCommunicator(self, workflow:Workflow, folder:Path = None) -> None :
+        for i, comm in enumerate(workflow.getCommunicators()):
+            if comm.getCommunicatorTransportType() != CommunicatorTransportType.MPI:
+                continue
+            
+            inputTask = workflow.getTaskByName(comm.getInputTaskName())
+            comm.setInputMPIRanks(inputTask.getGlobalStartRank(), inputTask.getGlobalNbRank())
+
+            outputTask = workflow.getTaskByName(comm.getOutputTaskName())
+            comm.setOutputMPIRanks(outputTask.getGlobalStartRank(), outputTask.getGlobalNbRank())
+
+            # Done setting up the comm, marking it as processed
+            comm.markAsProcessed()
+    
+    def removeFiles(self) -> None:
+        pass
+
+class ZMQCommunicatorSetup(CommunicatorSetup):
+    def __init__(self) -> None:
+        super().__init__()
+    
+    def configureCommunicator(self, workflow: Workflow, folder: Path = None) -> None:
         # Parse all the communicators, look for ZMQ types, and setup the addressses
         communicators = workflow.getCommunicators()
 
         for communicator in communicators:
-            if communicator.getCommunicatorType() == CommunicatorType.ZMQ:
-                # Search for the task sending data
-                outTask = workflow.getTaskByName(communicator.getOutputTaskName())
-                outProcesses = outTask.getProcessList()
-
-                # Search for the task receiving data
-                inTask = workflow.getTaskByName(communicator.getInputTaskName())
-                inProcesses = inTask.getProcessList()
-
-                # Assign the address to the port information
-                communicator.configureSockets(outProcesses, inProcesses)
+            if communicator.getCommunicatorTransportType() == CommunicatorTransportType.ZMQ:
+                
+                if not communicator.isConfigurable():
+                    raise RuntimeError(f"The ZMQ Communicator {communicator.getName()} cannnot be configured.")
+                communicator.configure()
 
                 # Mark the communicator
                 communicator.markAsProcessed()
@@ -262,12 +282,13 @@ class MainLauncher:
     def generateOutputFiles(self, workflow:Workflow, folder:Path = None):
         
         # Process the tasks 
-        mpiLauncher = OpenMPILauncher()
-        mpiLauncher.generateOutputFiles(workflow=workflow, folder=folder)
+        self.processTasks(workflow, folder)
+
+        # Forward the processes from the tasks to their respective 
+        self.forwardProcessesToCommunicators(workflow)
 
         # Process the communicators when necessary
-        zmqLauncher = ZMQLauncher()
-        zmqLauncher.processZMQCommunicator(workflow=workflow)
+        self.processCommunicators(workflow, folder)
 
         # Now that all the tasks have been processed, all the information required has been
         # associated with the relevant component. We can now generate the configuration for the
@@ -275,9 +296,42 @@ class MainLauncher:
         workflow.generateWorkflowConfiguration()
 
 
-        self.launchers.append(mpiLauncher)
-        self.launchers.append(zmqLauncher)
         self.workflow = workflow
+
+    def processTasks(self, workflow:Workflow, folder:Path = None) -> None:
+        mpiLauncher = OpenMPITaskSetup()
+        mpiLauncher.assignProcesses(workflow=workflow, folder=folder)
+
+        self.launchers.append(mpiLauncher)
+
+    def forwardProcessesToCommunicators(self, workflow:Workflow) -> None:
+        communicators = workflow.getCommunicators()
+
+        for comm in communicators:
+            # If the communicator has a receiver side, forward the processes of the task to the communicator
+            inputTaskName = comm.getInputTaskName()
+            if inputTaskName != "":
+                if not workflow.hasTask(inputTaskName):
+                    raise RuntimeError(f"The communicator {comm.getName()} is connected to the task {inputTaskName} but the task is not declared in the workflow.")
+                task = workflow.getTaskByName(inputTaskName)
+                comm.assignReceiverProcesses(task.getProcessList())
+
+            # If the communicator has a receiver side, forward the processes of the task to the communicator
+            outputTaskName = comm.getOutputTaskName()
+            if outputTaskName != "":
+                if not workflow.hasTask(outputTaskName):
+                    raise RuntimeError(f"The communicator {comm.getName()} is connected to the task {outputTaskName} but the task is not declared in the workflow.")
+                task = workflow.getTaskByName(outputTaskName)
+                comm.assignSenderProcesses(task.getProcessList())
+
+    def processCommunicators(self, workflow:Workflow, folder:Path = None) -> None:
+        mpiCommLauncher = MPICommunicatorSetup()
+        mpiCommLauncher.configureCommunicator(workflow=workflow, folder=folder)
+        zmqCommLauncher = ZMQCommunicatorSetup()
+        zmqCommLauncher.configureCommunicator(workflow=workflow, folder=folder)
+
+        self.launchers.append(mpiCommLauncher)
+        self.launchers.append(zmqCommLauncher)
 
     def removeFiles(self) -> None:
         for launcher in self.launchers:

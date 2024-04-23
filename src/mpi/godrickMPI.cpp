@@ -83,7 +83,6 @@ bool godrick::mpi::GodrickMPI::initFromJSON(const std::string& jsonPath, const s
     // Processing the communicator
     if(data.count("communicators") > 0)
     {
-
         for(auto & comm : data["communicators"])
         {
             if(comm["inputTaskName"].get<std::string>().compare(taskName) == 0 || comm["outputTaskName"].get<std::string>().compare(taskName) == 0)
@@ -91,7 +90,7 @@ bool godrick::mpi::GodrickMPI::initFromJSON(const std::string& jsonPath, const s
                 // This communicator is associated with the local task, processing it
                 spdlog::info("Found the communicator {} associated with the local task {}.", comm["name"].get<std::string>(), taskName);
 
-                auto commObj = godrick::createCommunicator(comm["type"].get<std::string>());
+                auto commObj = godrick::createCommunicator(comm["transport"].get<std::string>());
                 if(!commObj)
                 {
                     spdlog::error("Unable to create the communicator {} (something wrong in the json configuration file?).", comm["name"].get<std::string>());

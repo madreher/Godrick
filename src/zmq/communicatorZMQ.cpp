@@ -2,11 +2,15 @@
 
 #include <spdlog/spdlog.h>
 
+// Name must match the enums of the class ZMQBindingSide in communicator.py
+constexpr auto g_bindingSideSender = "ZMQ_BIND_SENDER";
+constexpr auto g_bindingSideReceiver = "ZMQ_BIND_RECEIVER";
+
 bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string& taskName)
 {
-    if(data.count("type") == 0 || data.at("type").get<std::string>().compare("ZMQ") != 0)
+    if(data.count("transport") == 0 || data.at("transport").get<std::string>().compare("ZMQ") != 0)
     {
-        spdlog::error("Wrong communicator type associated with the communicator. This reader can only process ZMQ commuinicator.");
+        spdlog::error("Wrong communicator transport associated with the communicator. This reader can only process ZMQ commuinicator.");
         return false;
     }
 
@@ -33,41 +37,91 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
     {
         case ZMQCommProtocol::PUB_SUB:
         {
-            std::string addr = data["protocolSettings"].at("pubaddr").get<std::string>();
-            int port = data["protocolSettings"].at("pubport").get<int>();
+            std::string addr = data["protocolSettings"].at("addr").get<std::string>();
+            int port = data["protocolSettings"].at("port").get<int>();
+            std::string bindingSide = data["protocolSettings"].at("bindingside").get<std::string>();
+
+            bool bindOnSender = (bindingSide.compare(g_bindingSideSender) == 0);
+
             std::stringstream ss;
             ss<<"tcp://"<<addr<<":"<<port;
-            if(isReceiver)
+            if(isSender)
             {
-                m_socket = zmq::socket_t(m_context, ZMQ_SUB);
-                m_socket.connect(ss.str());
-                m_socket.set(zmq::sockopt::subscribe, "");  // We subscribe to anything
-                spdlog::info("Connecting the receiver {} to the address {}.", taskName, ss.str());
+                if(bindOnSender)
+                {
+                    m_socket = zmq::socket_t(m_context, ZMQ_PUB);
+                    m_socket.bind(ss.str());
+                    spdlog::info("Binding the sender {} to the address {}.", taskName, ss.str());
+                }
+                else
+                {
+                    m_socket = zmq::socket_t(m_context, ZMQ_PUB);
+                    m_socket.connect(ss.str());
+                    spdlog::info("Connecting the sender {} to the address {}.", taskName, ss.str());
+                }
             }
             else
             {
-                m_socket = zmq::socket_t(m_context, ZMQ_PUB);
-                m_socket.bind(ss.str());
-                spdlog::info("Binding the sender {} to the address {}.", taskName, ss.str());
+                if(!bindOnSender)
+                {
+                    m_socket = zmq::socket_t(m_context, ZMQ_SUB);
+                    m_socket.bind(ss.str());
+                    m_socket.set(zmq::sockopt::subscribe, "");  // We subscribe to anything
+                    spdlog::info("Binding the receiver {} to the address {}.", taskName, ss.str());
+                }
+                else
+                {
+                    m_socket = zmq::socket_t(m_context, ZMQ_SUB);
+                    m_socket.connect(ss.str());
+                    m_socket.set(zmq::sockopt::subscribe, "");  // We subscribe to anything
+                    spdlog::info("Connecting the receiver {} to the address {}.", taskName, ss.str());
+                }
             }
             return true;
         }
         case ZMQCommProtocol::PUSH_PULL:
         {
-            std::string addr = data["protocolSettings"].at("pushaddr").get<std::string>();
-            int port = data["protocolSettings"].at("pushport").get<int>();
+            std::string addr = data["protocolSettings"].at("addr").get<std::string>();
+            int port = data["protocolSettings"].at("port").get<int>();
+            std::string bindingSide = data["protocolSettings"].at("bindingside").get<std::string>();
+
+            bool bindOnSender = (bindingSide.compare(g_bindingSideSender) == 0);
+
             std::stringstream ss;
             ss<<"tcp://"<<addr<<":"<<port;
-            if(isReceiver)
+            if(isSender)
             {
-                m_socket = zmq::socket_t(m_context, ZMQ_PULL);
-                m_socket.connect(ss.str());
+                if(bindOnSender)
+                {
+                    m_socket = zmq::socket_t(m_context, ZMQ_PUSH);
+                    m_socket.bind(ss.str());
+                    spdlog::info("Binding the sender {} to the address {}.", taskName, ss.str());
+                }
+                else
+                {
+                    m_socket = zmq::socket_t(m_context, ZMQ_PUSH);
+                    m_socket.connect(ss.str());
+                    //m_socket.set(zmq::sockopt::subscribe, "");  // We subscribe to anything
+                    spdlog::info("Connecting the sender {} to the address {}.", taskName, ss.str());
+                }
             }
             else
             {
-                m_socket = zmq::socket_t(m_context, ZMQ_PUSH);
-                m_socket.bind(ss.str());
+                if(!bindOnSender)
+                {
+                    m_socket = zmq::socket_t(m_context, ZMQ_PULL);
+                    m_socket.bind(ss.str());
+                    spdlog::info("Binding the receiver {} to the address {}.", taskName, ss.str());
+                }
+                else
+                {
+                    m_socket = zmq::socket_t(m_context, ZMQ_PULL);
+                    m_socket.connect(ss.str());
+                    //m_socket.set(zmq::sockopt::subscribe, "");  // We subscribe to anything
+                    spdlog::info("Connecting the receiver {} to the address {}.", taskName, ss.str());
+                }
             }
+            return true;
             return true;
         }
         default:

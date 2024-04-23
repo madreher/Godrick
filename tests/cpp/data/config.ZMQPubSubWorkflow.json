@@ -24,15 +24,17 @@
     "communicators": [
         {
             "name": "myComm",
-            "type": "ZMQ",
+            "transport": "ZMQ",
+            "open": "CLOSED",
             "inputPortName": "in",
             "inputTaskName": "receivepubsub",
             "outputPortName": "out",
             "outputTaskName": "sendpubsub",
             "zmqprotocol": "PUB_SUB",
             "protocolSettings": {
-                "pubaddr": "localhost",
-                "pubport": 50000
+                "addr": "localhost",
+                "port": 50000,
+                "bindingside": "ZMQ_BIND_SENDER"
             }
         }
     ]
