@@ -156,3 +156,15 @@ install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 include(GNUInstallDirs)
 install(DIRECTORY include/godrick DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+################################
+# Add our config helpers
+################################
+add_subdirectory(config)
+
+################################
+# Create CMake importable
+# exports for all of our targets
+################################
+# install exports to comply with standard find_package search path expectations
+#install(EXPORT Godrick DESTINATION lib/cmake/godrick)
