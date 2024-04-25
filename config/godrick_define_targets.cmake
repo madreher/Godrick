@@ -24,7 +24,7 @@ set_property(TARGET godrick::godrick
 
 if(GODRICK_MPI_TRANSPORT)
     add_library(godrick::godrick_mpi INTERFACE IMPORTED)
-    set_property(godrick::godrick_mpi
+    set_property(TARGET godrick::godrick_mpi
                 PROPERTY INTERFACE_LINK_LIBRARIES
                 godrick::godrick
                 GodrickMPILib)
@@ -32,7 +32,7 @@ endif()
 
 if(GODRICK_ZMQ_TRANSPORT)
     add_library(godrick::godrick_zmq INTERFACE IMPORTED)
-    set_property(godrick::godrick_zmq
+    set_property(TARGET godrick::godrick_zmq
                 PROPERTY INTERFACE_LINK_LIBRARIES
                 godrick::godrick
                 GodrickZMQLib)

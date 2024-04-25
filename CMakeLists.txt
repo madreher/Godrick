@@ -60,8 +60,8 @@ target_compile_features(GR_project_options INTERFACE cxx_std_20)
 
 target_compile_definitions(GR_project_options
                             INTERFACE
-                                CMAKE_BINARY_DIR="${CMAKE_BINARY_DIR}"
-                                CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+                                GR_CMAKE_BINARY_DIR="${CMAKE_BINARY_DIR}"
+                                GR_CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
                                 GR_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
                                 GR_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
                                 GR_VERSION_STRING="${GR_VERSION_STRING}"
@@ -69,19 +69,20 @@ target_compile_definitions(GR_project_options
                                 GR_VERSION_MINOR=${GR_VERSION_MINOR}
                                 GR_VERSION_PATCH=${GR_VERSION_PATCH}
                                 GR_VERSION_TWEAK=${GR_VERSION_BUILD}
-                                CMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}"
+                                GR_CMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}"
                                 GR_GIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
 
 #######################################################################################
 # Link this interface to include a standard set of libs that would be needed
-# for developing Nanodesigner
+# for developing Godrick
 #######################################################################################
 add_library(GR_project_libraries INTERFACE )
 #######################################################################################
 
 target_include_directories( GR_project_libraries
     INTERFACE
-        ${CMAKE_SOURCE_DIR}/include)
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>  
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
 # This is necessary to do here because MPI has to be found BEFORE
 # finding Conduit. Otherwise, Conduit seems to hide/overwrite the MPI cmake variables 
@@ -121,6 +122,16 @@ target_link_libraries( GR_project_libraries
         conduit::conduit
 )
 endif()
+
+# Explicitely settings these dummy interfaces as export for the package 
+# so that the cmake godrick.cmake can be generated at the end
+install(TARGETS GR_project_libraries 
+        EXPORT godrick
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin)
+install(TARGETS GR_project_options EXPORT godrick)
+install(TARGETS GR_project_warnings EXPORT godrick)
 
 set(GR_BIN_DIR 			${CMAKE_INSTALL_PREFIX}/bin)
 set(GR_LIB_DIR 			${CMAKE_INSTALL_PREFIX}/lib)
@@ -167,4 +178,4 @@ add_subdirectory(config)
 # exports for all of our targets
 ################################
 # install exports to comply with standard find_package search path expectations
-#install(EXPORT Godrick DESTINATION lib/cmake/godrick)
+install(EXPORT godrick DESTINATION lib/cmake/godrick)

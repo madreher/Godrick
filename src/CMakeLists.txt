@@ -10,7 +10,8 @@ add_library( ${library_MODULE} SHARED ${files} )
 
 target_include_directories( ${library_MODULE}
                             PUBLIC
-                               "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+                               $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+                               $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
                            )
 
 target_link_libraries( ${library_MODULE}
@@ -28,7 +29,7 @@ target_link_libraries( ${library_MODULE}
 target_compile_features(   ${library_MODULE} PUBLIC cxx_std_20)
 
 include(GNUInstallDirs)
-install(TARGETS ${library_MODULE} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS ${library_MODULE} EXPORT godrick DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 if(${GR_MPI_TRANSPORT})
     add_subdirectory(mpi)
