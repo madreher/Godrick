@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
+
+@PACKAGE_INIT@
+
+if(NOT GODRICK_FOUND)
+    # Compute the installation prefix relative to this file.
+    get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
+    get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+    if(_IMPORT_PREFIX STREQUAL "/")
+      set(_IMPORT_PREFIX "")
+    endif()
+
+    set(GODRICK_VERSION "@PROJECT_VERSION@")
+    set(GODRICK_MPI_TRANSPORT   "@GR_MPI_TRANSPORT@")
+    set(GODRICK_ZMQ_TRANSPORT   "@GR_ZMQ_TRANSPORT@")
+
+    get_filename_component(GODRICK_CMAKE_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+    # include targets exported by cmake
+    include(${GODRICK_CMAKE_CONFIG_DIR}/godrick.cmake)
+
+    # finally setup our final imported targets
+    include(${GODRICK_CMAKE_CONFIG_DIR}/godrick_define_targets.cmake)
+
+    set(GODRICK_FOUND TRUE)
+endif()
