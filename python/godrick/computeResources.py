@@ -167,6 +167,18 @@ class ComputeCollection(ComputeResources):
                 node.initAutomatic(hostname=hostname, nbSockets=1, coresPerSocket=nbCores, useHT=addHT)
                 self.nodes.append(node)
     
+    def initFromLocalhost(self, useHT:bool=True) -> None:
+        if len(self.nodes) > 0:
+            raise RuntimeError(f"Cannot initialize the ComputeCollection {self.name} from a hostfile, the collection already has nodes attached to it.")
+        node = ComputeNode()
+
+        import psutil
+        nbPhysicalCores = psutil.cpu_count(logical=False)
+        nbLogicalCores = psutil.cpu_count(logical=True)
+        hasHt = nbLogicalCores != nbPhysicalCores
+        node.initAutomatic(hostname="localhost", nbSockets=1, coresPerSocket=nbPhysicalCores, useHT=(useHT and hasHt))
+        self.nodes.append(node)
+        
     def getNbNodes(self) -> int:
         return len(self.nodes)
     

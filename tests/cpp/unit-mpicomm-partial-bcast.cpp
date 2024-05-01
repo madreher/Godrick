@@ -38,6 +38,14 @@ SCENARIO("MPI transport with Partial Broadcast protocol.")
         REQUIRE(handler.push("out", data));
         handler.flush("out");
 
+        // Second data
+        conduit::Node data2;
+        uint32_t val2 = 20;
+        data2["data"] = val2;
+        data2.print_detailed();
+        REQUIRE(handler.push("out", data2));
+        handler.flush("out");
+
         // Closing the application
         handler.close();
     }
@@ -55,6 +63,15 @@ SCENARIO("MPI transport with Partial Broadcast protocol.")
         REQUIRE(receivedData.size() == 1);
         uint32_t val = 10;
         REQUIRE(receivedData[0]["data"].as_uint32() == val);
+
+        // Receive the second data
+        receivedData.clear();
+        REQUIRE(handler.get("in", receivedData));
+
+        // Check the data received 
+        REQUIRE(receivedData.size() == 1);
+        uint32_t val2 = 20;
+        REQUIRE(receivedData[0]["data"].as_uint32() == val2);
 
         // Closing the application
         handler.close();

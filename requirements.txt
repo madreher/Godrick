@@ -1,1 +1,2 @@
 -r tests/python/requirements.test.txt
+psutil>=5.9.8
