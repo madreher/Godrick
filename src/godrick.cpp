@@ -40,7 +40,9 @@ bool godrick::Godrick::push(const std::string& portName, conduit::Node& data, bo
     {
         bool result =  m_outputPorts.at(portName).push(data);
         if(result && autoFlush)
+        {
             m_outputPorts.at(portName).flush();
+        }
         return result;
     }
 }

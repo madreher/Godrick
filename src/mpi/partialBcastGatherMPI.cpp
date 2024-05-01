@@ -191,6 +191,8 @@ bool godrick::mpi::PartialBCastGatherProtocolImplMPI::receive(std::vector<condui
         data[sourceIndex].update(n_msg["data"]);
     }
 
+    m_expectedMsgID = (m_expectedMsgID == INT_MAX ? 0 : m_expectedMsgID + 1);
+
     return true;
 }
 
