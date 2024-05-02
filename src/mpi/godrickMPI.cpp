@@ -156,6 +156,9 @@ bool godrick::mpi::GodrickMPI::initMPIInfo(int startRank, int nbRanks)
 
 void godrick::mpi::GodrickMPI::close()
 {
+    // Handle the terminate message first
+    Godrick::close();
+
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
 }

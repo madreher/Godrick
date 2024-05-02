@@ -30,6 +30,11 @@ public:
     InputPort(const std::string& name) : Port(name){}
     virtual ~InputPort() override {}
     bool get(std::vector<conduit::Node>&  data) const;
+    void setCloseFlag(bool flag){ m_isClosed = flag; }
+    bool isClosed() const { return m_isClosed; }
+
+protected:
+    bool m_isClosed = false;
 };
 
 class OutputPort : public Port 
