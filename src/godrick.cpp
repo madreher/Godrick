@@ -59,12 +59,12 @@ void godrick::Godrick::flush(const std::string& portName)
     m_outputPorts.at(portName).flush();
 }
 
-bool godrick::Godrick::get(const std::string& portName, std::vector<conduit::Node>& data)
+godrick::MessageResponse godrick::Godrick::get(const std::string& portName, std::vector<conduit::Node>& data)
 {
     if(m_inputPorts.count(portName) == 0)
     {
         spdlog::error("Request to get on the input port {} but the port doesn't exist.", portName);
-        return false;
+        return MessageResponse::ERROR;
     }
     else
     { 
@@ -76,12 +76,14 @@ bool godrick::Godrick::get(const std::string& portName, std::vector<conduit::Nod
                 if(godrick::isTerminateMessage(msg))
                 {
                     m_inputPorts.at(portName).setCloseFlag(true);
-                    return false;
+                    return MessageResponse::TERMINATE;
                 }
             }
         }
+        else
+            return MessageResponse::EMPTY;
 
-        return true;
+        return MessageResponse::MESSAGES;
     }
 }
 

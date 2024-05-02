@@ -10,6 +10,15 @@
 
 namespace godrick {
 
+enum class MessageResponse : uint8_t
+{
+    TOKEN = 0,      // System message type generated to unlock loops
+    TERMINATE = 1,  // System message type generated when calling close()
+    MESSAGES = 2,   // Regular messages
+    EMPTY = 3,      // Try to receive messages but nothing is available. Only used by gates
+    ERROR = 4
+};
+
 class Godrick
 {
 
@@ -25,7 +34,7 @@ public:
 
     bool push(const std::string& portName, conduit::Node& data, bool autoFlush = false) const;
     void flush(const std::string& portName);
-    bool get(const std::string& portName, std::vector<conduit::Node>& data);
+    MessageResponse get(const std::string& portName, std::vector<conduit::Node>& data);
 
 
 protected:

@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     }
 
     std::vector<conduit::Node> receivedData;
-    if(handler.get("in", receivedData))
+    if(handler.get("in", receivedData) == godrick::MessageResponse::MESSAGES)
     {
         if(receivedData.size() == 1)
         {   

@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 
     std::vector<conduit::Node> receivedData;
     uint32_t nbAttempts = 0;
-    while(!handler.get("in", receivedData))
+    while(handler.get("in", receivedData) != godrick::MessageResponse::MESSAGES)
     {
         nbAttempts++;
         spdlog::warn("Failed to receive data attempt {}.", nbAttempts);

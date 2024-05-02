@@ -57,7 +57,7 @@ SCENARIO("MPI transport with Partial Broadcast protocol.")
 
         // Receiving the data
         std::vector<conduit::Node> receivedData;
-        REQUIRE(handler.get("in", receivedData));
+        REQUIRE(handler.get("in", receivedData) == godrick::MessageResponse::MESSAGES);
         
         // Check the data received 
         REQUIRE(receivedData.size() == 1);
@@ -66,7 +66,7 @@ SCENARIO("MPI transport with Partial Broadcast protocol.")
 
         // Receive the second data
         receivedData.clear();
-        REQUIRE(handler.get("in", receivedData));
+        REQUIRE(handler.get("in", receivedData) == godrick::MessageResponse::MESSAGES);
 
         // Check the data received 
         REQUIRE(receivedData.size() == 1);
