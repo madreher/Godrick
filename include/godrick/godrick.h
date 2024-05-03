@@ -10,15 +10,6 @@
 
 namespace godrick {
 
-enum class MessageResponse : uint8_t
-{
-    TOKEN = 0,      // System message type generated to unlock loops
-    TERMINATE = 1,  // System message type generated when calling close()
-    MESSAGES = 2,   // Regular messages
-    EMPTY = 3,      // Try to receive messages but nothing is available. Only used by gates
-    ERROR = 4
-};
-
 class Godrick
 {
 
@@ -40,6 +31,7 @@ public:
 protected:
     std::unordered_map<std::string, InputPort>  m_inputPorts;
     std::unordered_map<std::string, OutputPort> m_outputPorts;
+    std::string m_taskName;
 
 }; // Godrick
 

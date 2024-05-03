@@ -68,8 +68,8 @@ godrick::MessageResponse godrick::Godrick::get(const std::string& portName, std:
     }
     else
     { 
-        bool result = m_inputPorts.at(portName).get(data);
-        if(result)
+        godrick::MessageResponse result = m_inputPorts.at(portName).get(data);
+        if(result == godrick::MessageResponse::MESSAGES)
         {
             for(auto & msg : data)
             {
@@ -81,7 +81,7 @@ godrick::MessageResponse godrick::Godrick::get(const std::string& portName, std:
             }
         }
         else
-            return MessageResponse::EMPTY;
+            return result;
 
         return MessageResponse::MESSAGES;
     }
@@ -95,14 +95,14 @@ void godrick::Godrick::close()
     // Send the terminate message to all the receivers of this task
     for(auto & [k, v] : m_outputPorts)
     {
-        spdlog::info("Pushing terminate to the port {}.", k);
+        spdlog::trace("Task {} pushing terminate to the port {}.", m_taskName, k);
         v.push(msg);
     }
 
     // Make sure that all the consumers have received the message
     for(auto & [k, v] : m_outputPorts)
     {
-        spdlog::info("Flushing the port {}.", k);
+        spdlog::trace("Task {} flushing the port {}.", m_taskName, k);
         v.flush();
     }
 
@@ -111,10 +111,10 @@ void godrick::Godrick::close()
     // message before exiting the program.
     for(auto & [k, v] : m_inputPorts)
     {
-        spdlog::info("Waiting for a message on port {}", k);
+        spdlog::trace("Task {} waiting for a message on port {}", m_taskName, k);
         std::vector<conduit::Node> tmp;
         if(!v.isClosed())
             v.get(tmp); 
     }
-    spdlog::info("Close completed.");
+    spdlog::trace("Task {} Close completed.", m_taskName);
 }

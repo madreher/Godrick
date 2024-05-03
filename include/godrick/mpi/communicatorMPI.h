@@ -32,7 +32,7 @@ public:
     virtual bool initFromJSON(json& data, const std::string& taskName) override;
 
     virtual bool send(conduit::Node& data) override;
-    virtual bool receive(std::vector<conduit::Node>& data) override;
+    virtual MessageResponse receive(std::vector<conduit::Node>& data) override;
     virtual void flush() override;
 
 protected:
