@@ -15,7 +15,7 @@ class Communicator
 {
 public:
     Communicator(){}
-    virtual ~Communicator(){}
+    virtual ~Communicator() = default;
 
     virtual bool initFromJSON(json& data, const std::string& taskName);
 

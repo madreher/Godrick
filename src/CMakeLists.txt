@@ -33,9 +33,9 @@ install(TARGETS ${library_MODULE} EXPORT godrick DESTINATION ${CMAKE_INSTALL_LIB
 
 if(${GR_MPI_TRANSPORT})
     add_subdirectory(mpi)
-    target_link_libraries(${library_MODULE} PUBLIC GodrickMPILib)
+    #target_link_libraries(${library_MODULE} PUBLIC GodrickMPILib)
 endif()
 if(${GR_ZMQ_TRANSPORT})
     add_subdirectory(zmq)
-    target_link_libraries(${library_MODULE} PUBLIC GodrickZMQLib)
+    #target_link_libraries(${library_MODULE} PUBLIC GodrickZMQLib)
 endif()

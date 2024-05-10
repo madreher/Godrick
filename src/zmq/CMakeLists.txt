@@ -19,6 +19,7 @@ target_link_libraries( ${library_MODULE}
                                 GR_project_options
                                 GR_project_warnings
                                 CONAN_PKG::cppzmq
+                                GodrickLib
                      )
 
 target_compile_definitions(${library_MODULE} 

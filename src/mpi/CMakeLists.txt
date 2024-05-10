@@ -20,6 +20,7 @@ target_link_libraries( ${library_MODULE}
                                 GR_project_warnings
                                 conduit::conduit_mpi
                                 MPI::MPI_CXX
+                                GodrickLib
                      )
 target_compile_definitions(${library_MODULE} 
                             PUBLIC
