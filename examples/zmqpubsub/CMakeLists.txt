@@ -5,8 +5,6 @@ target_link_libraries(sendpubsub
                                 GR_project_options
                                 GR_project_warnings
                                 GodrickLib)
-                                #GodrickMPILib
-                                #GodrickZMQLib)
 
 add_executable(receivepubsub receive.cpp)
 
@@ -15,8 +13,6 @@ target_link_libraries(receivepubsub
                                 GR_project_options
                                 GR_project_warnings
                                 GodrickLib)
-                                #GodrickMPILib
-                                #GodrickZMQLib)
 
 install(TARGETS 
             sendpubsub

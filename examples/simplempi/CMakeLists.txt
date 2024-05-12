@@ -5,7 +5,6 @@ target_link_libraries(task
                                 GR_project_options
                                 GR_project_warnings
                                 GodrickLib)
-                                #GodrickMPILib)
 
 install(TARGETS 
             task 

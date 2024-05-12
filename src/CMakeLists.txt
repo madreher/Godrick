@@ -58,27 +58,15 @@ target_compile_features(   ${library_MODULE} PUBLIC cxx_std_20)
 
 include(GNUInstallDirs)
 install(TARGETS ${library_MODULE} EXPORT godrick DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(DIRECTORY include/godrick DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-#if(${GR_MPI_TRANSPORT})
-#    target_compile_definitions(${library_MODULE} 
-#        PUBLIC
-#            GODRICK_MPI)
-#    target_link_libraries( ${library_MODULE}
-#            PUBLIC
-#                MPI::MPI_CXX
-#     )
-#    add_subdirectory(mpi)
-    #target_link_libraries(${library_MODULE} PUBLIC GodrickMPILib)
-#endif()
-#if(${GR_ZMQ_TRANSPORT})
-#    target_compile_definitions(${library_MODULE} 
-#    PUBLIC
-#        GODRICK_ZMQ)
-#    target_link_libraries( ${library_MODULE}
-#        PUBLIC
-#            CONAN_PKG::cppzmq
-#    )
-#    add_subdirectory(zmq)
-    #target_link_libraries(${library_MODULE} PUBLIC GodrickZMQLib)
-#endif()
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/godrick 
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        PATTERN "include/godrick/mpi" EXCLUDE
+        PATTERN "include/godrick/zmq" EXCLUDE)
+if(${GR_MPI_TRANSPORT})
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/godrick/mpi 
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/godrick)
+endif()
+if(${GR_ZMQ_TRANSPORT})
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/godrick/zmq 
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/godrick)
+endif()
