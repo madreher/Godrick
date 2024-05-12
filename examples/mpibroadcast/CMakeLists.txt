@@ -4,8 +4,8 @@ target_link_libraries(send
                                 GR_project_libraries
                                 GR_project_options
                                 GR_project_warnings
-                                GodrickLib
-                                GodrickMPILib)
+                                GodrickLib)
+                                #GodrickMPILib)
 
 add_executable(receive receive.cpp)
 
@@ -13,8 +13,8 @@ target_link_libraries(receive
                                 GR_project_libraries
                                 GR_project_options
                                 GR_project_warnings
-                                GodrickLib
-                                GodrickMPILib)
+                                GodrickLib)
+                                #GodrickMPILib)
 
 install(TARGETS 
             send
