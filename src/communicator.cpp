@@ -11,6 +11,8 @@ bool godrick::Communicator::initFromJSON(json& data, const std::string& taskName
         return false;
     }
 
-    m_name = data.at("name").get<std::string>();
+    m_name = data.at("name").get<std::string>(); 
+    m_nbTokenLeft = data.value("nbTokens", 0);
+
     return true;
 }

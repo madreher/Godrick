@@ -189,21 +189,27 @@ bool godrick::grzmq::CommunicatorZMQ::send(conduit::Node& data)
     return true;
 }
 
-bool godrick::grzmq::CommunicatorZMQ::receive(std::vector<conduit::Node>& data)
+godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receive(std::vector<conduit::Node>& data)
 {
-
+    if(m_nbTokenLeft > 0)
+    {
+        m_nbTokenLeft -= 1;
+        return godrick::MessageResponse::TOKEN;
+    }
+    
     zmq::message_t msg;
     zmq::recv_result_t result = m_socket.recv(msg, zmq::recv_flags::none);
     if(!result.has_value())
     {
         spdlog::warn("The communicator {} didn't receive a message.", m_name);
-        return false;
+        return godrick::MessageResponse::EMPTY;
     }
 
+    // For all intended purposes, not receiving message or receiving an empty message
     if(result.value() == 0)
     {
         spdlog::warn("Empty message received by the communicator {}.", m_name);
-        return false;
+        return godrick::MessageResponse::EMPTY;
     }
 
     data.resize(1);
@@ -238,5 +244,5 @@ bool godrick::grzmq::CommunicatorZMQ::receive(std::vector<conduit::Node>& data)
     data[0].update(n_msg["data"]);
 
 
-    return true;
+    return godrick::MessageResponse::MESSAGES;
 }

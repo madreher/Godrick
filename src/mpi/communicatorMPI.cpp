@@ -125,14 +125,24 @@ bool godrick::mpi::CommunicatorMPI::send(conduit::Node& data)
     return m_protocolImpl->send(data);
 }
 
-bool godrick::mpi::CommunicatorMPI::receive(std::vector<conduit::Node>& data)
+godrick::MessageResponse godrick::mpi::CommunicatorMPI::receive(std::vector<conduit::Node>& data)
 {
     if(!m_protocolImpl)
     {
         spdlog::error("The protocol implementation is not instanciated.");
-        return false;
+        return godrick::MessageResponse::ERROR;
     }
-    return m_protocolImpl->receive(data);
+
+    if(m_nbTokenLeft > 0)
+    {
+        m_nbTokenLeft -= 1;
+        return godrick::MessageResponse::TOKEN;
+    }
+    
+    if(m_protocolImpl->receive(data))
+        return godrick::MessageResponse::MESSAGES;
+    else
+        return godrick::MessageResponse::ERROR;
 }
 
 void godrick::mpi::CommunicatorMPI::flush()

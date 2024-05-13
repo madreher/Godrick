@@ -49,7 +49,7 @@ SCENARIO("MPI transport with Partial Gather protocol.")
 
         // Receiving the data
         std::vector<conduit::Node> receivedData;
-        REQUIRE(handler.get("in", receivedData));
+        REQUIRE(handler.get("in", receivedData) == godrick::MessageResponse::MESSAGES);
         
         // Check the data received 
         REQUIRE(receivedData.size() == 3);

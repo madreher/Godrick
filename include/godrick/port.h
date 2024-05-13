@@ -29,7 +29,14 @@ class InputPort : public Port
 public:
     InputPort(const std::string& name) : Port(name){}
     virtual ~InputPort() override {}
-    bool get(std::vector<conduit::Node>&  data) const;
+    godrick::MessageResponse get(std::vector<conduit::Node>&  data);
+    void setCloseFlag(bool flag){ m_isClosed = flag; }
+    bool isClosed() const { return m_isClosed; }
+    virtual void addCommunicator(std::shared_ptr<Communicator> comm) override; 
+
+protected:
+    bool m_isClosed = false;
+    
 };
 
 class OutputPort : public Port 

@@ -131,7 +131,7 @@ bool godrick::mpi::PartialBCastGatherProtocolImplMPI::send(conduit::Node& data)
                     m_sentMsgID,
                     m_localComm,
                     &entry.requests.back());
-        spdlog::info("Sending schema from {} to {}.", m_localRank, dest);
+        spdlog::trace("Sending schema from {} to {}.", m_localRank, dest);
     }
     m_sentMsgID = (m_sentMsgID == INT_MAX ? 0 : m_sentMsgID + 1);
 
@@ -144,7 +144,7 @@ bool godrick::mpi::PartialBCastGatherProtocolImplMPI::receive(std::vector<condui
 
     // Prepare the data 
     data.resize(static_cast<size_t>(m_nbExpectedReception));
-    spdlog::info("Rank {} preparing to receive {} node.", m_localRank, m_nbExpectedReception);
+    spdlog::trace("Rank {} preparing to receive {} node.", m_localRank, m_nbExpectedReception);
     for(int i = 0; i < m_nbExpectedReception; ++i)
     {
         MPI_Status status;

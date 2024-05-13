@@ -58,7 +58,7 @@ SCENARIO("ZMQ transport with PUSH_PULL protocol.")
 
         // Receiving the data
         std::vector<conduit::Node> receivedData;
-        REQUIRE(handler.get("in", receivedData));
+        REQUIRE(handler.get("in", receivedData) == godrick::MessageResponse::MESSAGES);
         
         // Check the data received 
         REQUIRE(receivedData.size() == 1);

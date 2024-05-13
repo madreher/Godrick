@@ -53,6 +53,7 @@ bool godrick::mpi::GodrickMPI::initFromJSON(const std::string& jsonPath, const s
         if(name.compare(taskName) != 0)
             continue;
         spdlog::info("Found the task information for the current task.");
+        m_taskName = name;
         auto taskType = task.at("type").get<std::string>();
         if(taskType.compare("MPI") != 0)
         {
@@ -156,6 +157,9 @@ bool godrick::mpi::GodrickMPI::initMPIInfo(int startRank, int nbRanks)
 
 void godrick::mpi::GodrickMPI::close()
 {
+    // Handle the terminate message first
+    Godrick::close();
+
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
 }
