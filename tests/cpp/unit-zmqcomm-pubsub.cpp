@@ -69,10 +69,10 @@ SCENARIO("ZMQ transport with PUB_SUB protocol.")
 
         // Receiving the data
         std::vector<conduit::Node> receivedData;
-        REQUIRE(handler.get("in", receivedData));
+        REQUIRE(handler.get("in", receivedData) == godrick::MessageResponse::MESSAGES);
         uint32_t nbAttempts = 0;
         uint32_t maxAttempts = 5;
-        while(!handler.get("in", receivedData) && nbAttempts < maxAttempts)
+        while(handler.get("in", receivedData)  != godrick::MessageResponse::MESSAGES && nbAttempts < maxAttempts)
         {
             nbAttempts++;
             spdlog::warn("Failed to receive data attempt {}.", nbAttempts);

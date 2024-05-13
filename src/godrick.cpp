@@ -1,4 +1,5 @@
 #include <godrick/godrick.h>
+#include <godrick/messageUtils.h>
 
 #include <algorithm>
 
@@ -58,13 +59,62 @@ void godrick::Godrick::flush(const std::string& portName)
     m_outputPorts.at(portName).flush();
 }
 
-bool godrick::Godrick::get(const std::string& portName, std::vector<conduit::Node>& data) const
+godrick::MessageResponse godrick::Godrick::get(const std::string& portName, std::vector<conduit::Node>& data)
 {
     if(m_inputPorts.count(portName) == 0)
     {
         spdlog::error("Request to get on the input port {} but the port doesn't exist.", portName);
-        return false;
+        return MessageResponse::ERROR;
     }
-    else 
-        return m_inputPorts.at(portName).get(data);
+    else
+    { 
+        godrick::MessageResponse result = m_inputPorts.at(portName).get(data);
+        if(result == godrick::MessageResponse::MESSAGES)
+        {
+            for(auto & msg : data)
+            {
+                if(godrick::isTerminateMessage(msg))
+                {
+                    m_inputPorts.at(portName).setCloseFlag(true);
+                    return MessageResponse::TERMINATE;
+                }
+            }
+        }
+        else
+            return result;
+
+        return MessageResponse::MESSAGES;
+    }
+}
+
+void godrick::Godrick::close()
+{
+    conduit::Node msg;
+    godrick::setTerminateMessage(msg);
+
+    // Send the terminate message to all the receivers of this task
+    for(auto & [k, v] : m_outputPorts)
+    {
+        spdlog::trace("Task {} pushing terminate to the port {}.", m_taskName, k);
+        v.push(msg);
+    }
+
+    // Make sure that all the consumers have received the message
+    for(auto & [k, v] : m_outputPorts)
+    {
+        spdlog::trace("Task {} flushing the port {}.", m_taskName, k);
+        v.flush();
+    }
+
+    // For every input port, wait to receive a message if the port is not already closed.
+    // This is to ensure that in case of cycle, all the components have received the close 
+    // message before exiting the program.
+    for(auto & [k, v] : m_inputPorts)
+    {
+        spdlog::trace("Task {} waiting for a message on port {}", m_taskName, k);
+        std::vector<conduit::Node> tmp;
+        if(!v.isClosed())
+            v.get(tmp); 
+    }
+    spdlog::trace("Task {} Close completed.", m_taskName);
 }

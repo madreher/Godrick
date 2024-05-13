@@ -26,10 +26,16 @@ class Communicator():
     def __init__(self, name:str, transport:CommunicatorTransportType) -> None:
         self.name = name
         self.transport = transport
+        self.nbTokens = 0
 
         self.configured = False
         self.processedByLauncher = False    # Flag used when creating the command line
                                             # This will be switched when a launcher convert the Task to command line
+
+    def setNbToken(self, nbTokens:int = 0):
+        if nbTokens < 0:
+            raise ValueError("The number of token must be a positive integer.")
+        self.nbTokens = nbTokens
 
     def getName(self) -> str:
         return self.name
@@ -40,6 +46,7 @@ class Communicator():
     def toDict(self) -> dict:
         result = {}
         result["name"] = self.name
+        result["nbTokens"] = self.nbTokens
         result["transport"] = self.transport.name
         result["configured"] = self.configured
 
@@ -48,6 +55,7 @@ class Communicator():
     def fromDict(self, data:dict, version:int) -> None:
 
         self.name = data["name"]
+        self.nbTokens = data["nbTokens"]
         self.transport = CommunicatorTransportType[data["transport"]]
         self.configured = data["configured"]
 
