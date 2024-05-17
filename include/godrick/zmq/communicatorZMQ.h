@@ -24,7 +24,7 @@ class CommunicatorZMQ : public Communicator
 {
 public:
     CommunicatorZMQ() : Communicator(), m_context(1) {}
-    virtual ~CommunicatorZMQ(){}
+    ~CommunicatorZMQ() = default;
 
     virtual bool initFromJSON(json& data, const std::string& taskName) override;
 

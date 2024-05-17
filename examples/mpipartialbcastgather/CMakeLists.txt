@@ -4,8 +4,7 @@ target_link_libraries(sendPartial
                                 GR_project_libraries
                                 GR_project_options
                                 GR_project_warnings
-                                GodrickLib
-                                GodrickMPILib)
+                                GodrickLib)
 
 add_executable(receivePartial receive.cpp)
 
@@ -13,8 +12,7 @@ target_link_libraries(receivePartial
                                 GR_project_libraries
                                 GR_project_options
                                 GR_project_warnings
-                                GodrickLib
-                                GodrickMPILib)
+                                GodrickLib)
 
 install(TARGETS 
             sendPartial

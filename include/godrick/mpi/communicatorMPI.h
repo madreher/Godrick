@@ -27,7 +27,7 @@ class CommunicatorMPI : public Communicator
 {
 public:
     CommunicatorMPI() : Communicator(){}
-    virtual ~CommunicatorMPI() override {}
+    ~CommunicatorMPI() = default;
 
     virtual bool initFromJSON(json& data, const std::string& taskName) override;
 

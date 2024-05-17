@@ -29,7 +29,7 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
 
     if(!isReceiver && !isSender)
     {
-        spdlog::error("Trying to process the the communicator {} from task {}, but the task is neither the sender not the receiver. Something went wrong when processing the configuration file.", m_name, taskName);
+        spdlog::error("Trying to process the communicator {} from task {}, but the task is neither the sender not the receiver. Something went wrong when processing the configuration file.", m_name, taskName);
         return false;
     }
 
@@ -42,6 +42,12 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
             std::string bindingSide = data["protocolSettings"].at("bindingside").get<std::string>();
 
             bool bindOnSender = (bindingSide.compare(g_bindingSideSender) == 0);
+            bool bindOnReceiver = (bindingSide.compare(g_bindingSideReceiver) == 0);
+            if(!bindOnSender && !bindOnReceiver)
+            {
+                spdlog::error("Unable to identify which side is binding in a ZMQ communicator but unable to find the information for the communicator {}.", m_name);
+                return false;
+            }
 
             std::stringstream ss;
             ss<<"tcp://"<<addr<<":"<<port;
@@ -86,7 +92,13 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
             std::string bindingSide = data["protocolSettings"].at("bindingside").get<std::string>();
 
             bool bindOnSender = (bindingSide.compare(g_bindingSideSender) == 0);
-
+            bool bindOnReceiver = (bindingSide.compare(g_bindingSideReceiver) == 0);
+            if(!bindOnSender && !bindOnReceiver)
+            {
+                spdlog::error("Unable to identify which side is binding in a ZMQ communicator but unable to find the information for the communicator {}.", m_name);
+                return false;
+            }
+            
             std::stringstream ss;
             ss<<"tcp://"<<addr<<":"<<port;
             if(isSender)

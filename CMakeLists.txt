@@ -166,7 +166,7 @@ add_subdirectory(tests)
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 include(GNUInstallDirs)
-install(DIRECTORY include/godrick DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(DIRECTORY include/godrick DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ################################
 # Add our config helpers

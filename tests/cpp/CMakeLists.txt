@@ -2,12 +2,12 @@ enable_testing()
 
 #Create the base executable to replace the default one from catch
 add_library(               GR-catchmain SHARED ${CMAKE_CURRENT_SOURCE_DIR}/catch-main.cpp)
-target_link_libraries(     GR-catchmain PUBLIC GR_project_options CONAN_PKG::catch2 GodrickLib GodrickMPILib)
+target_link_libraries(     GR-catchmain PUBLIC GR_project_options CONAN_PKG::catch2 GodrickLib)
 target_compile_features(   GR-catchmain PUBLIC cxx_std_20)
 target_compile_definitions(GR-catchmain PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 
 add_library(               GR-catchmain-mpi SHARED ${CMAKE_CURRENT_SOURCE_DIR}/catch-main-mpi.cpp)
-target_link_libraries(     GR-catchmain-mpi PUBLIC GR_project_options CONAN_PKG::catch2 MPI::MPI_CXX GodrickLib GodrickMPILib)
+target_link_libraries(     GR-catchmain-mpi PUBLIC GR_project_options CONAN_PKG::catch2 MPI::MPI_CXX GodrickLib)
 target_compile_features(   GR-catchmain-mpi PUBLIC cxx_std_20)
 target_compile_definitions(GR-catchmain-mpi PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 

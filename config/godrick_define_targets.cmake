@@ -22,20 +22,20 @@ set_property(TARGET godrick::godrick
              PROPERTY INTERFACE_LINK_LIBRARIES
              GodrickLib)
 
-if(GODRICK_MPI_TRANSPORT)
-    add_library(godrick::godrick_mpi INTERFACE IMPORTED)
-    set_property(TARGET godrick::godrick_mpi
-                PROPERTY INTERFACE_LINK_LIBRARIES
-                godrick::godrick
-                GodrickMPILib)
-endif()
+#if(GODRICK_MPI_TRANSPORT)
+#    add_library(godrick::godrick_mpi INTERFACE IMPORTED)
+#    set_property(TARGET godrick::godrick_mpi
+#                PROPERTY INTERFACE_LINK_LIBRARIES
+#                godrick::godrick
+#                GodrickMPILib)
+#endif()
 
-if(GODRICK_ZMQ_TRANSPORT)
-    add_library(godrick::godrick_zmq INTERFACE IMPORTED)
-    set_property(TARGET godrick::godrick_zmq
-                PROPERTY INTERFACE_LINK_LIBRARIES
-                godrick::godrick
-                GodrickZMQLib)
-endif()
+#if(GODRICK_ZMQ_TRANSPORT)
+#    add_library(godrick::godrick_zmq INTERFACE IMPORTED)
+#    set_property(TARGET godrick::godrick_zmq
+#                PROPERTY INTERFACE_LINK_LIBRARIES
+#                godrick::godrick
+#                GodrickZMQLib)
+#endif()
 
 message(STATUS "Found Godrick: ${_IMPORT_ROOT} (found version ${GODRICK_VERSION})")
