@@ -148,6 +148,30 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
 
 bool godrick::grzmq::CommunicatorZMQ::send(conduit::Node& data)
 {
+    switch (m_msgFormat)
+    {
+        case godrick::MessageFormat::CONDUIT:
+        {
+            return sendConduitFormat(data);
+        }
+        case godrick::MessageFormat::JSON:
+        {
+            return sendJSONFormat(data);
+        }
+        case godrick::MessageFormat::BSON:
+        {
+            return sendBSONFormat(data);
+        }
+        default:
+        {
+            spdlog::error("Unknown message format requested when sending.");
+            return false;
+        }
+    }
+}
+
+bool godrick::grzmq::CommunicatorZMQ::sendConduitFormat(conduit::Node& data)
+{
     conduit::Schema s_data_compact;
     
     // schema will only be valid if compact and contig
@@ -189,6 +213,20 @@ bool godrick::grzmq::CommunicatorZMQ::send(conduit::Node& data)
     return true;
 }
 
+bool godrick::grzmq::CommunicatorZMQ::sendJSONFormat(conduit::Node& data)
+{
+    (void)data;
+    spdlog::error("The method sendJSONFormat is not implemented yet.");
+    return false;
+}
+
+bool godrick::grzmq::CommunicatorZMQ::sendBSONFormat(conduit::Node& data)
+{
+    (void)data;
+    spdlog::error("The method sendBSONFormat is not implemented yet.");
+    return false;
+}
+
 godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receive(std::vector<conduit::Node>& data)
 {
     if(m_nbTokenLeft > 0)
@@ -213,7 +251,32 @@ godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receive(std::vector<co
     }
 
     data.resize(1);
+    
+    switch(m_msgFormat)
+    {
+        case godrick::MessageFormat::CONDUIT:
+        {
+            return receiveConduitFormat(data, msg);
+        }
+        case godrick::MessageFormat::JSON:
+        {
+            return receiveJSONFormat(data, msg);
+        }
+        case godrick::MessageFormat::BSON:
+        {
+            return receiveBSONFormat(data, msg);
+        }
+        default:
+        {
+            spdlog::error("Unknown message format requested.");
+            data.clear();
+            return godrick::MessageResponse::ERROR;
+        }
+    }
+}
 
+godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receiveConduitFormat(std::vector<conduit::Node>& data, zmq::message_t& msg)
+{
     conduit::Node n_buffer(conduit::DataType::uint8(static_cast<int>(msg.size())));
 
     uint8_t *n_buff_ptr = reinterpret_cast<uint8_t*>(n_buffer.data_ptr());
@@ -245,4 +308,20 @@ godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receive(std::vector<co
 
 
     return godrick::MessageResponse::MESSAGES;
+}
+
+godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receiveJSONFormat(std::vector<conduit::Node>& data, zmq::message_t& msg)
+{
+    (void)data;
+    (void)msg;
+    spdlog::error("The method receiveJSONFormat is not implemented yet.");
+    return godrick::MessageResponse::ERROR;
+}
+
+godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receiveBSONFormat(std::vector<conduit::Node>& data, zmq::message_t& msg)
+{
+    (void)data;
+    (void)msg;
+    spdlog::error("The method receiveBSONFormat is not implemented yet.");
+    return godrick::MessageResponse::ERROR;
 }

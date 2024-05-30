@@ -33,6 +33,13 @@ public:
     virtual void flush() override {}
 
 protected:
+    bool sendConduitFormat(conduit::Node& data);
+    bool sendJSONFormat(conduit::Node& data);
+    bool sendBSONFormat(conduit::Node& data);
+    MessageResponse receiveConduitFormat(std::vector<conduit::Node>& data, zmq::message_t& msg);
+    MessageResponse receiveJSONFormat(std::vector<conduit::Node>& data, zmq::message_t& msg);
+    MessageResponse receiveBSONFormat(std::vector<conduit::Node>& data, zmq::message_t& msg);
+
     zmq::context_t m_context;
     ZMQCommProtocol m_protocol = ZMQCommProtocol::PUB_SUB;
     zmq::socket_t m_socket;

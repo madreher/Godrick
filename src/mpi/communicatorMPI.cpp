@@ -18,6 +18,12 @@ bool godrick::mpi::CommunicatorMPI::initFromJSON(json& data, const std::string& 
     if(!godrick::Communicator::initFromJSON(data, taskName))
         return false;
 
+    if(m_msgFormat != MessageFormat::CONDUIT)
+    {
+        spdlog::error("The CommunicatorMPI only support CONDUIT as message format.");
+        return false;
+    }
+
     // Get the global ranking information
     m_globalInStartRank     = data.at("inStartRank").get<int>();        // Rank of the INPUT PORT = destination
     m_globalInSize          = data.at("inSize").get<int>();

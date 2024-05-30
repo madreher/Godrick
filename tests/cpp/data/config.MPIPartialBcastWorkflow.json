@@ -33,7 +33,8 @@
             "inSize": 3,
             "outStartRank": 0,
             "outSize": 1,
-            "mpiprotocol": "PARTIAL_BCAST_GATHER"
+            "mpiprotocol": "PARTIAL_BCAST_GATHER",
+            "format": "MSG_FORMAT_CONDUIT"
         }
     ]
 }

@@ -31,6 +31,7 @@
             "outputPortName": "out",
             "outputTaskName": "sendpubsub",
             "zmqprotocol": "PUB_SUB",
+            "format": "MSG_FORMAT_CONDUIT",
             "protocolSettings": {
                 "addr": "localhost",
                 "port": 50000,

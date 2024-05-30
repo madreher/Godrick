@@ -31,6 +31,7 @@
             "outputPortName": "out",
             "outputTaskName": "sendpushpull",
             "zmqprotocol": "PUSH_PULL",
+            "format": "MSG_FORMAT_CONDUIT",
             "protocolSettings": {
                 "addr": "localhost",
                 "port": 50000,
