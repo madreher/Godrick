@@ -215,9 +215,11 @@ bool godrick::grzmq::CommunicatorZMQ::sendConduitFormat(conduit::Node& data)
 
 bool godrick::grzmq::CommunicatorZMQ::sendJSONFormat(conduit::Node& data)
 {
-    (void)data;
-    spdlog::error("The method sendJSONFormat is not implemented yet.");
-    return false;
+    auto jsonContent = data.to_json();
+
+    zmq::message_t msg(jsonContent.c_str(), jsonContent.size());
+    m_socket.send(msg, zmq::send_flags::none); // Not doing asynchronous for now.
+    return true;
 }
 
 bool godrick::grzmq::CommunicatorZMQ::sendBSONFormat(conduit::Node& data)
@@ -312,10 +314,11 @@ godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receiveConduitFormat(s
 
 godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receiveJSONFormat(std::vector<conduit::Node>& data, zmq::message_t& msg)
 {
-    (void)data;
-    (void)msg;
-    spdlog::error("The method receiveJSONFormat is not implemented yet.");
-    return godrick::MessageResponse::ERROR;
+
+    std::string msgJSON(static_cast<char*>(msg.data()), msg.size());
+
+    data[0].parse(msgJSON, "json");
+    return godrick::MessageResponse::MESSAGES;
 }
 
 godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receiveBSONFormat(std::vector<conduit::Node>& data, zmq::message_t& msg)
