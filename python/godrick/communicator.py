@@ -237,11 +237,17 @@ class MPIPairedCommunicator(PairedCommunicator):
     def setMPIProtocol(self, protocol:MPICommunicatorProtocol) -> None:
         self.protocol = protocol
 
+class CommunicatorMessageFormat(Enum):
+    MSG_FORMAT_CONDUIT = 0,
+    MSG_FORMAT_JSON = 1,
+    MSG_FORMAT_BSON = 2
+
 class GateCommunicator(Communicator):
-    def __init__(self, name: str, transport: CommunicatorTransportType, side: CommunicatorGateSideFlag) -> None:
+    def __init__(self, name: str, transport: CommunicatorTransportType, side: CommunicatorGateSideFlag, format:CommunicatorMessageFormat = CommunicatorMessageFormat.MSG_FORMAT_CONDUIT) -> None:
         super().__init__(name, transport)
         self.gateSide = side
         self.connectedGate = None
+        self.msgFormat = format
         self.processes = []
         self.portName = ""
         self.taskName = ""
@@ -252,6 +258,9 @@ class GateCommunicator(Communicator):
     def setCommunicatorGateSide(self, side: CommunicatorGateSideFlag) -> None:
         self.gateSide = side
 
+    def getCommunicatorGateMessageFormat(self) -> CommunicatorMessageFormat:
+        return self.msgFormat
+
     def connectToGate(self, gate:GateCommunicator) -> None:
         if gate.gateSide == self.gateSide:
             raise ValueError(f"Error while trying to connect the gate {self.name} to the gate {gate.name}: cannot connect two gate with the same side.")
@@ -259,6 +268,8 @@ class GateCommunicator(Communicator):
             raise ValueError(f"Trying to connect the gate {self.name} but the gate is already connected.")
         if gate.connectedGate is not None:
             raise ValueError(f"Trying to connect the gate {gate.name} but the gate is already connected.")
+        if gate.msgFormat != self.msgFormat:
+            raise ValueError(f"Error while trying to connect the gate {self.name} to the gate {gate.name}: they are not using the same message format.")
         self.connectedGate = gate
         gate.connectedGate = self
         
@@ -317,6 +328,7 @@ class GateCommunicator(Communicator):
         result["gateSide"] = self.gateSide.name
         result["portName"] = self.portName
         result["taskName"] = self.taskName
+        result["format"] = self.msgFormat.name
         return result
     
     def fromDict(self, data:dict, version:int) -> None:
@@ -325,6 +337,7 @@ class GateCommunicator(Communicator):
         self.gateSide = CommunicatorGateSideFlag[data["gateSide"]]
         self.portName = data["portName"]
         self.taskName = data["taskName"]
+        self.msgFormat = CommunicatorMessageFormat[data["format"]]
     
 
 class ZMQBindingSide(Enum):

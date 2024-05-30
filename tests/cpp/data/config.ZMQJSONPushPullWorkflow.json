@@ -1,7 +1,7 @@
 {
     "tasks": [
         {
-            "name": "sendpubsub",
+            "name": "sendpushpull",
             "type": "MPI",
             "inputPorts": [],
             "outputPorts": [
@@ -11,7 +11,7 @@
             "nbRanks": 1
         },
         {
-            "name": "receivepubsub",
+            "name": "receivepushpull",
             "type": "MPI",
             "inputPorts": [
                 "in"
@@ -27,11 +27,11 @@
             "transport": "ZMQ",
             "open": "CLOSED",
             "inputPortName": "in",
-            "inputTaskName": "receivepubsub",
+            "inputTaskName": "receivepushpull",
             "outputPortName": "out",
-            "outputTaskName": "sendpubsub",
-            "zmqprotocol": "PUB_SUB",
-            "format": "MSG_FORMAT_CONDUIT",
+            "outputTaskName": "sendpushpull",
+            "zmqprotocol": "PUSH_PULL",
+            "format": "MSG_FORMAT_JSON",
             "protocolSettings": {
                 "addr": "localhost",
                 "port": 50000,

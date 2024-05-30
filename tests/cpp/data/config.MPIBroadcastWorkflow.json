@@ -45,7 +45,8 @@
             "inSize": 3,
             "outStartRank": 0,
             "outSize": 1,
-            "mpiprotocol": "BROADCAST"
+            "mpiprotocol": "BROADCAST",
+            "format": "MSG_FORMAT_CONDUIT"
         }
     ]
 }

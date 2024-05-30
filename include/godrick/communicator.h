@@ -20,6 +20,20 @@ enum class MessageResponse : uint8_t
     ERROR = 4
 };
 
+enum class MessageFormat : uint8_t
+{
+    CONDUIT = 0,    // Native conduit format
+    JSON = 1,       // JSON format converted from conduit
+    BSON = 2        // Binary json format
+};
+
+// Conversion table, must match the names from CommunicatorMessageFormat in communicator.py
+static std::unordered_map<std::string, MessageFormat> strToMessageFormat = {
+    {"MSG_FORMAT_CONDUIT", MessageFormat::CONDUIT},
+    {"MSG_FORMAT_JSON", MessageFormat::JSON},
+    {"MSG_FORMAT_BSON", MessageFormat::BSON}
+};
+
 class Communicator
 {
 public:
@@ -41,6 +55,7 @@ public:
 protected:
     std::string m_name;
     int32_t m_nbTokenLeft = 0;
+    MessageFormat m_msgFormat = MessageFormat::CONDUIT;
 }; // Communicator
 
 } // godrick
