@@ -13,7 +13,14 @@ bool godrick::Communicator::initFromJSON(json& data, const std::string& taskName
 
     m_name = data.at("name").get<std::string>(); 
     m_nbTokenLeft = data.value("nbTokens", 0);
-    auto msgFormat = data.at("format").get<std::string>();
+    //auto msgFormat = data.at("format").get<std::string>();
+    // Using a default value because only the gates have the format setting, Paired communicators do not.
+
+    std::string msgFormat = "MSG_FORMAT_CONDUIT";
+    if(data.contains("format"))
+    {
+        msgFormat = data.at("format").get<std::string>();
+    }
     if(!strToMessageFormat.contains(msgFormat))
     {
         spdlog::error("Unknown message format {} received for the Communicator {}. Choose a supported message format.", msgFormat, m_name);

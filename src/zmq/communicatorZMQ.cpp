@@ -21,11 +21,28 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
     spdlog::info("Loading the settings for the communicator {} from the task {}.", m_name, taskName);
     // Get socket information and protocol 
     m_protocol = strToZMQCommProtocol.at(data.at("zmqprotocol").get<std::string>());
-    std::string receiverTask = data.at("inputTaskName").get<std::string>();
-    std::string senderTask = data.at("outputTaskName").get<std::string>();
 
-    bool isReceiver = receiverTask.compare(taskName) == 0;
-    bool isSender = senderTask.compare(taskName) == 0;
+    bool isReceiver = false;
+    bool isSender = false;
+    if(data.contains("inputTaskName")) // paired communicator case
+    {
+        std::string receiverTask = data.at("inputTaskName").get<std::string>();
+        std::string senderTask = data.at("outputTaskName").get<std::string>();
+
+        isReceiver = receiverTask.compare(taskName) == 0;
+        isSender = senderTask.compare(taskName) == 0;
+    }
+    else if(data.contains("gateSide")) // gate case
+    {
+        std::string gateSide = data.at("gateSide").get<std::string>();
+        isReceiver = gateSide.compare("OPEN_RECEIVER") == 0;
+        isSender = gateSide.compare("OPEN_SENDER") == 0;
+    }
+    else
+    {
+        spdlog::error("Unable to determine if the communicator {} is a gate or paired communicator.", m_name);
+        return false;
+    }
 
     if(!isReceiver && !isSender)
     {

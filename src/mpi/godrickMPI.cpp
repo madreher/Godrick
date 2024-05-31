@@ -86,43 +86,90 @@ bool godrick::mpi::GodrickMPI::initFromJSON(const std::string& jsonPath, const s
     {
         for(auto & comm : data["communicators"])
         {
-            if(comm["inputTaskName"].get<std::string>().compare(taskName) == 0 || comm["outputTaskName"].get<std::string>().compare(taskName) == 0)
+            if(comm.contains("inputTaskName")) // Paired communicator case
             {
-                // This communicator is associated with the local task, processing it
-                spdlog::info("Found the communicator {} associated with the local task {}.", comm["name"].get<std::string>(), taskName);
-
-                auto commObj = godrick::createCommunicator(comm["transport"].get<std::string>());
-                if(!commObj)
+                if(comm["inputTaskName"].get<std::string>().compare(taskName) == 0 || comm["outputTaskName"].get<std::string>().compare(taskName) == 0)
                 {
-                    spdlog::error("Unable to create the communicator {} (something wrong in the json configuration file?).", comm["name"].get<std::string>());
-                    return false;
-                }
-                commObj->initFromJSON(comm, taskName);
+                    // This communicator is associated with the local task, processing it
+                    spdlog::info("Found the  paired communicator {} associated with the local task {}.", comm["name"].get<std::string>(), taskName);
 
-                // Assign the communicator to its port.
-                if(comm["inputTaskName"].get<std::string>().compare(taskName) == 0)
-                {
-                    auto portName = comm["inputPortName"].get<std::string>();
-                    if(m_inputPorts.count(portName) == 0)
+                    auto commObj = godrick::createCommunicator(comm["transport"].get<std::string>());
+                    if(!commObj)
                     {
-                        spdlog::error("The input port {} requested by communicator {} doesn't exist for the task {}.", portName, comm["name"], taskName);
+                        spdlog::error("Unable to create the communicator {} (something wrong in the json configuration file?).", comm["name"].get<std::string>());
                         return false;
                     }
-                    m_inputPorts.at(portName).addCommunicator(commObj);
-                }
-                else
-                {
-                    auto portName = comm["outputPortName"].get<std::string>();
-                    if(m_outputPorts.count(portName) == 0)
-                    {
-                        spdlog::error("The output port {} requested by communicator {} doesn't exist for the task {}.", portName, comm["name"], taskName);
-                        return false;
-                    }
-                    m_outputPorts.at(portName).addCommunicator(commObj);
-                }
+                    commObj->initFromJSON(comm, taskName);
 
-                spdlog::info("Communicator {} processed by task {}.", comm["name"].get<std::string>(), taskName);
+                    // Assign the communicator to its port.
+                    
+                    if(comm["inputTaskName"].get<std::string>().compare(taskName) == 0)
+                    {
+                        auto portName = comm["inputPortName"].get<std::string>();
+                        if(m_inputPorts.count(portName) == 0)
+                        {
+                            spdlog::error("The input port {} requested by communicator {} doesn't exist for the task {}.", portName, comm["name"], taskName);
+                            return false;
+                        }
+                        m_inputPorts.at(portName).addCommunicator(commObj);
+                    }
+                    else
+                    {
+                        auto portName = comm["outputPortName"].get<std::string>();
+                        if(m_outputPorts.count(portName) == 0)
+                        {
+                            spdlog::error("The output port {} requested by communicator {} doesn't exist for the task {}.", portName, comm["name"], taskName);
+                            return false;
+                        }
+                        m_outputPorts.at(portName).addCommunicator(commObj);
+                    }
+                }
             }
+            else if(comm.contains("taskName")) // Gate case
+            {
+                if(comm["taskName"].get<std::string>().compare(taskName) == 0)
+                {
+                    // This communicator is associated with the local task, processing it
+                    spdlog::info("Found the  gate communicator {} associated with the local task {}.", comm["name"].get<std::string>(), taskName);
+
+                    auto commObj = godrick::createCommunicator(comm["transport"].get<std::string>());
+                    if(!commObj)
+                    {
+                        spdlog::error("Unable to create the communicator {} (something wrong in the json configuration file?).", comm["name"].get<std::string>());
+                        return false;
+                    }
+                    commObj->initFromJSON(comm, taskName);
+
+                    // Assign the gate to its port
+                    if(comm["gateSide"].get<std::string>().compare("OPEN_SENDER") == 0)
+                    {
+                        auto portName = comm["portName"].get<std::string>();
+                        if(m_outputPorts.count(portName) == 0)
+                        {
+                            spdlog::error("The output port {} requested by communicator {} doesn't exist for the task {}.", portName, comm["name"], taskName);
+                            return false;
+                        }
+                        m_outputPorts.at(portName).addCommunicator(commObj);
+                    }
+                    else
+                    {
+                        auto portName = comm["portName"].get<std::string>();
+                        if(m_inputPorts.count(portName) == 0)
+                        {
+                            spdlog::error("The input port {} requested by communicator {} doesn't exist for the task {}.", portName, comm["name"], taskName);
+                            return false;
+                        }
+                        m_inputPorts.at(portName).addCommunicator(commObj);
+                    }
+                }
+            }
+            else
+            {
+                spdlog::error("Unable to determine which task is assigned to a communicator.");
+                return false;
+            }
+
+            spdlog::info("Communicator {} processed by task {}.", comm["name"].get<std::string>(), taskName);
         }
     }
 

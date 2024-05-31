@@ -421,8 +421,8 @@ class ZMQPairedCommunicator(PairedCommunicator):
             raise NotImplementedError("The requested ZMQ protocol is currently not supported.")
     
 class ZMQGateCommunicator(GateCommunicator):
-    def __init__(self, name: str = "defaultZMQGateCommunicator", side: CommunicatorGateSideFlag = CommunicatorGateSideFlag.OPEN_SENDER, protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB, bindingSide: ZMQBindingSide = ZMQBindingSide.ZMQ_BIND_SENDER) -> None:
-        super().__init__(name, transport = CommunicatorTransportType.ZMQ, side = side)
+    def __init__(self, name: str = "defaultZMQGateCommunicator", side: CommunicatorGateSideFlag = CommunicatorGateSideFlag.OPEN_SENDER, protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB, bindingSide: ZMQBindingSide = ZMQBindingSide.ZMQ_BIND_SENDER, format:CommunicatorMessageFormat = CommunicatorMessageFormat.MSG_FORMAT_CONDUIT) -> None:
+        super().__init__(name, transport = CommunicatorTransportType.ZMQ, side = side, format=format)
         self.protocol = protocol
         self.protocolSettings = {}
         self.bindingSide = bindingSide
