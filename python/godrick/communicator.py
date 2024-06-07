@@ -421,11 +421,13 @@ class ZMQPairedCommunicator(PairedCommunicator):
             raise NotImplementedError("The requested ZMQ protocol is currently not supported.")
     
 class ZMQGateCommunicator(GateCommunicator):
-    def __init__(self, name: str = "defaultZMQGateCommunicator", side: CommunicatorGateSideFlag = CommunicatorGateSideFlag.OPEN_SENDER, protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB, bindingSide: ZMQBindingSide = ZMQBindingSide.ZMQ_BIND_SENDER, format:CommunicatorMessageFormat = CommunicatorMessageFormat.MSG_FORMAT_CONDUIT) -> None:
+    def __init__(self, name: str = "defaultZMQGateCommunicator", side: CommunicatorGateSideFlag = CommunicatorGateSideFlag.OPEN_SENDER, protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB, bindingSide: ZMQBindingSide = ZMQBindingSide.ZMQ_BIND_SENDER, format:CommunicatorMessageFormat = CommunicatorMessageFormat.MSG_FORMAT_CONDUIT, port:int = 50000) -> None:
         super().__init__(name, transport = CommunicatorTransportType.ZMQ, side = side, format=format)
         self.protocol = protocol
         self.protocolSettings = {}
         self.bindingSide = bindingSide
+        self.port = port
+        self.protocolSettings["port"] = self.port
 
     def toDict(self) -> dict:
         result =  super().toDict()
@@ -439,6 +441,8 @@ class ZMQGateCommunicator(GateCommunicator):
 
         self.protocol = ZMQCommunicatorProtocol[data["zmqprotocol"]]
         self.protocolSettings = data["protocolSettings"]
+        if "port" in self.protocolSettings:
+            self.port = self.protocolSettings["port"]
         self.bindingSide = ZMQBindingSide[data["protocolSettings"]["bindingside"]]
 
     
@@ -505,7 +509,7 @@ class ZMQGateCommunicator(GateCommunicator):
             # If no, it is configurable only if the other gate is configurable. This is because the binding side controls the address used by the communicator.
             if self.isBindingSide():
                 self.protocolSettings["addr"] = self.processes[0].hostname
-                self.protocolSettings["port"] = 50000
+                self.protocolSettings["port"] = self.port
                 self.protocolSettings["bindingside"] = self.bindingSide.name
             else:
                 # Can't configure from this side, the other side needs to be configured first
