@@ -106,7 +106,8 @@ bool godrick::mpi::PartialBCastGatherProtocolImplMPI::send(conduit::Node& data)
     conduit::Schema s_msg_compact;
     s_msg.compact_to(s_msg_compact);
     
-    MsgSentEntry entry(s_msg_compact);
+    m_transitMessages.emplace_back(s_msg_compact);
+    MsgSentEntry& entry = m_transitMessages.back();
     // these sets won't realloc since schemas are compatible
     entry.data["schema_len"].set(static_cast<int64_t>(snd_schema_json.length()));
     entry.data["schema"].set(snd_schema_json);
@@ -123,6 +124,7 @@ bool godrick::mpi::PartialBCastGatherProtocolImplMPI::send(conduit::Node& data)
     // Sending the data to all the destinations
     for(auto & dest : m_destinations)
     {
+        spdlog::trace("Sending schema from {} to {}: {}", m_localRank,dest, entry.data["schema"].as_char8_str());
         entry.requests.emplace_back();
         MPI_Isend(  entry.data.data_ptr(),
                     static_cast<int>(msg_data_size),
@@ -131,7 +133,6 @@ bool godrick::mpi::PartialBCastGatherProtocolImplMPI::send(conduit::Node& data)
                     m_sentMsgID,
                     m_localComm,
                     &entry.requests.back());
-        spdlog::trace("Sending schema from {} to {}.", m_localRank, dest);
     }
     m_sentMsgID = (m_sentMsgID == INT_MAX ? 0 : m_sentMsgID + 1);
 
@@ -179,6 +180,7 @@ bool godrick::mpi::PartialBCastGatherProtocolImplMPI::receive(std::vector<condui
         // create the schema
         conduit::Schema rcv_schema;
         conduit::Generator gen(n_msg["schema"].as_char8_str());
+        spdlog::trace("Rank {} received schema from {}: {}", m_localRank, status.MPI_SOURCE, n_msg["schema"].as_char8_str());
         gen.walk(rcv_schema);
 
         // advance by the schema length
