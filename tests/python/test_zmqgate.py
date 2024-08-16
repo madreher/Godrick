@@ -25,7 +25,7 @@ def test_ZMQGateCommunicator():
 
     gateSender = ZMQGateCommunicator(name="senderSide", side=CommunicatorGateSideFlag.OPEN_SENDER, bindingSide=ZMQBindingSide.ZMQ_BIND_SENDER)
     gateSender.connectToOutputPort(task1.getOutputPort("out"))
-    gateReceiver = ZMQGateCommunicator(name="receiverSide", side=CommunicatorGateSideFlag.OPEN_RECEIVER, bindingSide=ZMQBindingSide.ZMQ_BIND_SENDER)
+    gateReceiver = ZMQGateCommunicator(name="receiverSide", side=CommunicatorGateSideFlag.OPEN_RECEIVER, bindingSide=ZMQBindingSide.ZMQ_BIND_SENDER, nonblocking=True)
     gateReceiver.connectToInputPort(task2.getInputPort("in"))
 
     gateSender.connectToGate(gateReceiver)
@@ -58,6 +58,10 @@ def test_ZMQGateCommunicator():
             assert commDict["protocolSettings"]["addr"] == "machine1"
             assert commDict["protocolSettings"]["port"] == 50000
             assert commDict["protocolSettings"]["bindingside"] == ZMQBindingSide.ZMQ_BIND_SENDER.name
+            if commDict["name"] == "senderSide":
+                assert commDict["nonblocking"] == False
+            else:
+                assert commDict["nonblocking"] == True
 
     gateFile = Path(workflow.getGatesFile())
     assert gateFile.is_file()
@@ -77,5 +81,8 @@ def test_ZMQGateCommunicator():
             assert commDict["protocolSettings"]["addr"] == "machine1"
             assert commDict["protocolSettings"]["port"] == 50000
             assert commDict["protocolSettings"]["bindingside"] == ZMQBindingSide.ZMQ_BIND_SENDER.name
-
+            if commDict["name"] == "senderSide":
+                assert commDict["nonblocking"] == False
+            else:
+                assert commDict["nonblocking"] == True
     launcher.removeFiles()

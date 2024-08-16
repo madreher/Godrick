@@ -43,6 +43,7 @@ protected:
     zmq::context_t m_context;
     ZMQCommProtocol m_protocol = ZMQCommProtocol::PUB_SUB;
     zmq::socket_t m_socket;
+    bool m_nowait = false;
 };
 
 } // zmq

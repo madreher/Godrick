@@ -345,16 +345,18 @@ class ZMQBindingSide(Enum):
     ZMQ_BIND_SENDER = 1
 
 class ZMQPairedCommunicator(PairedCommunicator):
-    def __init__(self, id: str = "defaultZMQPairedCommunicator", protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB, bindingSide: ZMQBindingSide = ZMQBindingSide.ZMQ_BIND_SENDER) -> None:
+    def __init__(self, id: str = "defaultZMQPairedCommunicator", protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB, bindingSide: ZMQBindingSide = ZMQBindingSide.ZMQ_BIND_SENDER, nonblocking: bool = False) -> None:
         super().__init__(name=id, transport=CommunicatorTransportType.ZMQ)
         self.protocol = protocol
         self.protocolSettings = {}
         self.bindingSide = bindingSide
+        self.nonblocking = nonblocking
 
     def toDict(self) -> dict:
         result =  super().toDict()
         result["class"] = ZMQPairedCommunicator.__name__
         result["zmqprotocol"] = self.protocol.name
+        result["nonblocking"] = self.nonblocking
         result["protocolSettings"] = self.protocolSettings
         return result
     
@@ -402,7 +404,6 @@ class ZMQPairedCommunicator(PairedCommunicator):
             
         if len(self.senderProcesses) != 1:
             raise RuntimeError("The ZMQ communicator {} has an output but only 1 process output is supported ({} detected.)", self.name, len(self.senderProcesses))
-
         if self.protocol == ZMQCommunicatorProtocol.PUB_SUB:
             self.protocolSettings["port"] = 50000
             self.protocolSettings["bindingside"] = self.bindingSide.name
@@ -421,17 +422,19 @@ class ZMQPairedCommunicator(PairedCommunicator):
             raise NotImplementedError("The requested ZMQ protocol is currently not supported.")
     
 class ZMQGateCommunicator(GateCommunicator):
-    def __init__(self, name: str = "defaultZMQGateCommunicator", side: CommunicatorGateSideFlag = CommunicatorGateSideFlag.OPEN_SENDER, protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB, bindingSide: ZMQBindingSide = ZMQBindingSide.ZMQ_BIND_SENDER, format:CommunicatorMessageFormat = CommunicatorMessageFormat.MSG_FORMAT_CONDUIT, port:int = 50000) -> None:
+    def __init__(self, name: str = "defaultZMQGateCommunicator", side: CommunicatorGateSideFlag = CommunicatorGateSideFlag.OPEN_SENDER, protocol: ZMQCommunicatorProtocol = ZMQCommunicatorProtocol.PUB_SUB, bindingSide: ZMQBindingSide = ZMQBindingSide.ZMQ_BIND_SENDER, format:CommunicatorMessageFormat = CommunicatorMessageFormat.MSG_FORMAT_CONDUIT, port:int = 50000, nonblocking: bool = False) -> None:
         super().__init__(name, transport = CommunicatorTransportType.ZMQ, side = side, format=format)
         self.protocol = protocol
         self.protocolSettings = {}
         self.bindingSide = bindingSide
         self.port = port
         self.protocolSettings["port"] = self.port
+        self.nonblocking = nonblocking
 
     def toDict(self) -> dict:
         result =  super().toDict()
         result["class"] = ZMQGateCommunicator.__name__
+        result["nonblocking"] = self.nonblocking
         result["zmqprotocol"] = self.protocol.name
         result["protocolSettings"] = self.protocolSettings
         return result
@@ -440,6 +443,7 @@ class ZMQGateCommunicator(GateCommunicator):
         super().fromDict(data, version)
 
         self.protocol = ZMQCommunicatorProtocol[data["zmqprotocol"]]
+        self.nonblocking = data["nonblocking"]
         self.protocolSettings = data["protocolSettings"]
         if "port" in self.protocolSettings:
             self.port = self.protocolSettings["port"]
