@@ -57,6 +57,8 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
             std::string addr = data["protocolSettings"].at("addr").get<std::string>();
             int port = data["protocolSettings"].at("port").get<int>();
             std::string bindingSide = data["protocolSettings"].at("bindingside").get<std::string>();
+            if(m_nowait)
+                m_nowait = data.value("nonblocking", false);
 
             bool bindOnSender = (bindingSide.compare(g_bindingSideSender) == 0);
             bool bindOnReceiver = (bindingSide.compare(g_bindingSideReceiver) == 0);
@@ -107,6 +109,9 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
             std::string addr = data["protocolSettings"].at("addr").get<std::string>();
             int port = data["protocolSettings"].at("port").get<int>();
             std::string bindingSide = data["protocolSettings"].at("bindingside").get<std::string>();
+            m_nowait = data.value("nonblocking", false);
+            if(m_nowait)
+                spdlog::info("The nonblocking flag is set to {} for the communicator {}.", m_nowait, m_name);
 
             bool bindOnSender = (bindingSide.compare(g_bindingSideSender) == 0);
             bool bindOnReceiver = (bindingSide.compare(g_bindingSideReceiver) == 0);
@@ -150,7 +155,6 @@ bool godrick::grzmq::CommunicatorZMQ::initFromJSON(json& data, const std::string
                     spdlog::info("Connecting the receiver {} to the address {}.", taskName, ss.str());
                 }
             }
-            return true;
             return true;
         }
         default:
@@ -255,10 +259,21 @@ godrick::MessageResponse godrick::grzmq::CommunicatorZMQ::receive(std::vector<co
     }
     
     zmq::message_t msg;
-    zmq::recv_result_t result = m_socket.recv(msg, zmq::recv_flags::none);
+    zmq::recv_result_t result;
+    if(m_nowait)
+    {
+        spdlog::info("The communicator {} is in non-blocking mode.", m_name);
+        result = m_socket.recv(msg, zmq::recv_flags::dontwait);
+    }
+    else 
+    {
+        spdlog::info("The communicator {} is in blocking mode.", m_name);
+        result = m_socket.recv(msg, zmq::recv_flags::none);
+    }
     if(!result.has_value())
     {
-        spdlog::warn("The communicator {} didn't receive a message.", m_name);
+        if(!m_nowait)
+            spdlog::warn("The communicator {} didn't receive a message in blocking mode.", m_name);
         return godrick::MessageResponse::EMPTY;
     }
 
