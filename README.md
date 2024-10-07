@@ -51,7 +51,7 @@ git clone --recursive https://github.com/llnl/conduit.git . && \
 Godrick relies on Conan to install another set of dependencies which are not provided by packages.
 Here is how to install and setup Conan:
 ```
-pip3 install -q --no-cache-dir conan conan-package-tools
+pip3 install -q --no-cache-dir conan==1.62.0 conan-package-tools
 mkdir -p $HOME/.conan
 ```
 
