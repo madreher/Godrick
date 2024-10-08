@@ -149,6 +149,73 @@ pip3 install -e .
 
 Note that Godrick is composed of a runtime and a Python library which have both to be installed.
 
-## Documentation
+## Godrick in Details
 
-TODO
+Godrick is composed of two phases: declaring a workflow (i.e the different taks and communication channels), and the runtime which is executing the workflow on a set of compute resources. In this section, we will cover both these aspects separatly. 
+
+### Declaring a Workflow
+
+#### Tasks
+
+A `Task` object in Godrick represents an executable able to send and receive data from other `Task`. A `Task` is general described by a unique name, a command line, a set of compute resources, and a list of input and output ports. Input and output port are abstractions to receive and send data respectively on a individual communication channel. An individual `Task` can be a parallel application, either via multi-threading or multi-processing. Internally, a `Task` object can be represented as a list of processes, where each process has a list of compute resources assigned to it. Input and output ports are duplicated for each process part of the `Task`. The number of individual processes is definited by the type of `Task`, the amount of computational resources assign to the `Task`, and the placement policy of the `Task` on these resources. 
+
+For example, let's consider a `SingleProcessTask`. This `Task` object is designed to host only one process, and will therefor only spawn one instance of each of its ports. 
+However, this `Task` may still be assigned multiple cores which can be used by the executable of the task for multi-threading for instance.
+
+TODO: Add python example, Do issue 22
+
+Let's now consider an `MPITask`. An `MPITask` is the object to define a multi-process task. The number of processes created depends on the amount of compute resources assigned to the task, as well as the placement policy of the task on these resources.
+
+```
+from godrick.task import MPITask, MPIPlacementPolicy
+from godrick.computeResources import ComputeCollection
+
+# Create resources
+# In this example, we load a dummy cluster composed of a single node name localhost with N cores
+exampleFile = os.path.join(Path(__file__).resolve().parent, "../../data/tests/localhost.txt")
+cluster = ComputeCollection(name="myCluster")
+cluster.initFromHostFile(exampleFile, True) # Enable HT for each core
+
+# Extract two set of resources: a partition composed of 1 physical core, another composed of 3 cores
+partitions = cluster.splitNodesByCoreRange([1, 3])
+
+# Create a MPITask with a command line, an input port, a placement policy, and a set of resources
+task = MPITask(name="receivePartial", cmdline="bin/receivePartial --name receivePartial --config config.MPIPartialBcastWorkflow.json", placementPolicy=MPIPlacementPolicy.ONETASKPERCORE)
+task.addInputPort("in")
+task.setResources(partitions[1])
+```
+This this example, we create a `MPITask` and assign a partition of 3 physical cores / 6 logical threads to the `Task` since hyperthreading is enabled. We also assign the policy `MPIPlacementPolicy.ONETASKPERCORE` to it. With this policy, one process will be created per phyisical core. In this example, since 3 cores are assigned to the `MPITask`, three individual processes will be created. This also means that each process will have an input port named `in`.
+
+#### Communication Channels
+
+TODO:
+- Transport method
+- Paired VS Gate channels
+- Protocols
+
+#### Workflow and Launcher
+
+TODO: 
+- Main launcher
+- files produced
+- Work in progress to support SSH launcher
+
+### Runtime API
+
+#### The handler 
+
+TODO:
+- descript the base handler object and how its initialized
+
+#### Datamodel
+
+TODO:
+- Basic description of Conduit and how to create simple data objects
+
+
+#### Input and Output Ports
+
+TODO:
+- How to receive and send data
+- Different flags possible when receiving data
+- Lifespan of the data being sent
